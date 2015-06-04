@@ -67,6 +67,10 @@ public class UserChestsStorage {
     public void put(String userId, JSONObject json) {
         userChests.put(userId, json);
     }
+    
+    public JSONObject remove(String userId){
+        return userChests.remove(userId);
+    }
 
     public Collection<JSONObject> values() {
         return userChests.values();

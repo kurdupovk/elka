@@ -19,7 +19,7 @@ public class SignGenerator {
 
     private static final String[] params = new String[]{"suid", "uid", "aid", "authKey", "sessionKey"};
 
-    public static JSONObject getSignRequest(JSONObject _arg1, String url)  {
+    public static JSONObject getSignRequest(JSONObject _arg1, String url) {
         try {
             JSONObject _local3 = _arg1.getJSONObject("params");
 
@@ -37,8 +37,10 @@ public class SignGenerator {
             };
             return _arg1;
         } catch (JSONException ex) {
+            Logger.getLogger(SignGenerator.class.getName()).log(Level.SEVERE, ex.getMessage());
             return new JSONObject();
         }
+
     }
 
     public static String calcParamsArraySign(Object _arg1) throws JSONException {
@@ -90,7 +92,6 @@ public class SignGenerator {
             list.add(new JSONObject().put("key", key).put("value", _arg1.get(key)));
         }
         Collections.sort(list, new Comparator<JSONObject>() {
-
             @Override
             public int compare(JSONObject t, JSONObject t1) {
                 return ((Comparable) t.opt("key")).compareTo(t1.opt("key"));
@@ -98,5 +99,4 @@ public class SignGenerator {
         });
         return new JSONArray(list);
     }
-
 }

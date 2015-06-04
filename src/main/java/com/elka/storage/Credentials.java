@@ -17,6 +17,7 @@ public class Credentials {
     private long appId;
     private String secret;
     private String version;
+    private boolean invalid = false;
 
     private Credentials() {
     }
@@ -70,5 +71,13 @@ public class Credentials {
 
     public String getSecret() {
         return secret;
+    }
+
+    public boolean isInvalid() {
+        return invalid;
+    }
+
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
     }
 }

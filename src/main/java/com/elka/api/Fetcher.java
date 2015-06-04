@@ -29,26 +29,34 @@ public class Fetcher {
                 LOG.log(Level.INFO, "Defined users must not be null");
                 return;
             }
-            LOG.info("Starting users fetch.");
-            for (int i = 0; i < users.length(); i++) {
-                JSONObject user = null;
-                try {
-                    user = users.getJSONObject(i);
-                    String userId = user.getString("userId");
-                    JSONObject friend = ElkaApi.getFriend(userId, credentials);
-                    JSONObject chest = friend.getJSONObject("data").getJSONObject("chest");
-                    chest.put("photo", user.getString("photo"));
-                    chest.put("name", user.getString("name"));
-                    storage.put(userId, chest);
-                } catch (JSONException ex) {
-                    LOG.log(Level.SEVERE, "Can not parse json", ex);
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, "Can not request user - " + user.optString("name") + ". Message: " + ex.getMessage());
-                }
+            if (credentials.isInvalid()) {
+                LOG.log(Level.INFO, "Current credentials are invalid");
+                return;
             }
-            LOG.info("Users fetch finished.");
+            LOG.info("Starting users fetch.");
+            try {
+                ElkaApi elkaApi = new ElkaApi(credentials);
+                for (int i = 0; i < users.length(); i++) {
+                    JSONObject user = users.getJSONObject(i);
+                    String userId = user.getString("userId");
+                    try {
+                        JSONObject friend = elkaApi.getFriend(userId);
+                        JSONObject chest = friend.getJSONObject("data").getJSONObject("chest");
+                        chest.put("photo", user.getString("photo"));
+                        chest.put("name", user.getString("name"));
+                        chest.put("logintime", friend.getJSONObject("data").getJSONObject("user").getLong("loginTime"));
+                        storage.put(userId, chest);
+                    } catch (JSONException ex) {
+                        LOG.log(Level.SEVERE, ex.getMessage());
+                    } catch (IOException ex) {
+                        LOG.log(Level.SEVERE, "Can not request user - " + user.optString("name") + ". Message: " + ex.getMessage());
+                    }
+                }
+            } finally {
+                LOG.info("Users fetch finished.");
+            }
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, "There is unhandled exception", ex);
+            LOG.log(Level.SEVERE, "There is an unhandled exception", ex);
         }
     }
 }
