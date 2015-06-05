@@ -57,7 +57,9 @@ public class UserChestsStorage {
                     + "\"photo\":\"http://cs622416.vk.me/v622416137/33783/BQJlXYTfaWg.jpg\",\"name\":\"Екатерина Садовская\"},"
                     + "{\"userId\":1480668,\"sUserId\":\"81945095\",\"level\":4,\"loginTime\":1431582854,\"likeStatus\":0,"
                     + "\"hash\":\"aa011eae6ad83d65\",\"photo\":\"http://cs605621.vk.me/v605621095/b309/3sTKB3vbqYk.jpg\","
-                    + "\"name\":\"Алена Шилкова\"}]");
+                    + "\"name\":\"Алена Шилкова\"},{\"userId\":\"santa\",\"sUserId\":\"santa\",\"level\":4,\"loginTime\":1431582854,\"likeStatus\":0,"
+                    + "\"hash\":\"aa011eae6ad83d65\",\"photo\":\"\","
+                    + "\"name\":\"Дед мороз\"}]");
         } catch (JSONException ex) {
             Logger.getLogger(UserChestsStorage.class.getName()).log(Level.SEVERE, null, ex);
         }

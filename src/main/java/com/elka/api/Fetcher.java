@@ -3,6 +3,7 @@ package com.elka.api;
 import com.elka.storage.Credentials;
 import com.elka.storage.UserChestsStorage;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -40,7 +41,14 @@ public class Fetcher {
                     JSONObject user = users.getJSONObject(i);
                     String userId = user.getString("userId");
                     try {
-                        JSONObject friend = elkaApi.getFriend(userId);
+                        JSONObject friend = null;
+                        if (userId.equals("santa")) {
+                            friend = elkaApi.getSantaChest();
+                            JSONObject userJSON = new JSONObject().put("loginTime", new Date().getTime() / 1000);
+                            friend.getJSONObject("data").put("user", userJSON);
+                        } else {
+                            friend = elkaApi.getFriend(userId);
+                        }
                         JSONObject chest = friend.getJSONObject("data").getJSONObject("chest");
                         chest.put("photo", user.getString("photo"));
                         chest.put("name", user.getString("name"));

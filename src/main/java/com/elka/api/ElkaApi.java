@@ -82,6 +82,16 @@ public class ElkaApi {
         return sendRequest(url, sign);
     }
 
+    public JSONObject getSantaChest() throws IOException {
+        final String url = API_URL + "/friend/getChest/";
+
+        Map<String, Object> data = defaultRequestData(credentials);
+        Map<String, Object> params = createParams(null, 2, null, null);
+        data.put("params", new JSONObject(params));
+        JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
+        return sendRequest(url, sign);
+    }
+
     /*
      * {"params":{"userId":2883430,"sign":"9935c9882fbb0e8591995ce63ae2d655",
      * "screenId":1,"chestId":1,"sUserId":"12482981"},"sessionKey":"59555fb770e03034a5ddefa1bec6c3ea",
@@ -94,6 +104,6 @@ public class ElkaApi {
         Map<String, Object> params = createParams(friendId, 1, 1, sFrindUserId);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
-        return sendRequest(API_URL + "/friend/openChest/", sign);
+        return sendRequest(url, sign);
     }
 }
