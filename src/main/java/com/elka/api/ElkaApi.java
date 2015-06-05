@@ -53,26 +53,20 @@ public class ElkaApi {
         return params;
     }
 
-    private JSONObject sendRequest(String url, JSONObject sign) throws IOException {
-        Response response;
-        try {
-            response = Request.Post(url).bodyByteArray(sign.toString().getBytes(),
-                    ContentType.APPLICATION_FORM_URLENCODED).execute();
-            JSONObject responseJson = new JSONObject(response.returnContent().asString());
-            if (responseJson.has("error")) {
-                Logger.getLogger(ElkaApi.class.getName()).info(responseJson.toString());
-                if (responseJson.getString("text").contains("Authkey is invalid")) {
-                    credentials.setInvalid(true);
-                }
+    private JSONObject sendRequest(String url, JSONObject sign) throws IOException, JSONException {
+        Response response = Request.Post(url).bodyByteArray(sign.toString().getBytes(), ContentType.APPLICATION_FORM_URLENCODED).execute();
+        String responseString = response.returnContent().asString();
+        JSONObject responseJson = new JSONObject(responseString);
+        if (responseJson.has("error")) {
+            if (responseJson.getJSONObject("error").getString("text").contains("Authkey is invalid")) {
+                credentials.setInvalid(true);
             }
-            return responseJson;
-        } catch (JSONException ex) {
-            Logger.getLogger(ElkaApi.class.getName()).log(Level.SEVERE, "JSON exception parsing", ex);
+            throw new JSONException(responseString);
         }
-        return null;
+        return responseJson;
     }
 
-    public JSONObject getFriend(String friendId) throws IOException {
+    public JSONObject getFriend(String friendId) throws IOException, JSONException {
         final String url = API_URL + "/friend/getFriend/";
 
         Map<String, Object> data = defaultRequestData(credentials);
@@ -82,7 +76,7 @@ public class ElkaApi {
         return sendRequest(url, sign);
     }
 
-    public JSONObject getSantaChest() throws IOException {
+    public JSONObject getSantaChest() throws IOException, JSONException {
         final String url = API_URL + "/friend/getChest/";
 
         Map<String, Object> data = defaultRequestData(credentials);
@@ -98,7 +92,7 @@ public class ElkaApi {
      * "aid":"4606044","uid":"6591130","version":11,"sign":"5148d7f9f613362a5d30573a823a58aa",
      * "authKey":"e87047d9d5aac0a66cfb477c36120568","suid":"12143235"}
      */
-    public JSONObject openChest(String friendId, String sFrindUserId) throws IOException {
+    public JSONObject openChest(String friendId, String sFrindUserId) throws IOException, JSONException {
         final String url = API_URL + "/friend/openChest/";
         Map<String, Object> data = defaultRequestData(credentials);
         Map<String, Object> params = createParams(friendId, 1, 1, sFrindUserId);

@@ -27,10 +27,6 @@ public class Main {
     // Base URI the Grizzly HTTP server will listen on
     public static final String BASE_URI = "http://localhost:8080/elka/";
 
-    /**
-     * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
-     * @return Grizzly HTTP server.
-     */
     public static HttpServer startServer() {
         final ResourceConfig rc = new ResourceConfig().packages("com.elka");
         HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
@@ -46,6 +42,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, JSONException {
+        CredentialsStorage.getInstance().loadFromFile();
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleWithFixedDelay(new Runnable() {
             @Override
@@ -53,7 +50,7 @@ public class Main {
                 if (CredentialsStorage.getInstance().isEmpty()) {
                     return;
                 }
-                new Fetcher(CredentialsStorage.getInstance().getFrist()).fetchUsersTo(UserChestsStorage.getInstance());
+                new Fetcher(CredentialsStorage.getInstance().get()).fetchUsersTo(UserChestsStorage.getInstance());
             }
         }, 5000, 60000, TimeUnit.MILLISECONDS);
         final HttpServer server = startServer();

@@ -12,7 +12,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import org.json.JSONException;
 
@@ -34,9 +33,13 @@ public class CredentialsResource {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity("{\"error\":\"json invalid\"}").build());
         }
         CredentialsStorage.getInstance().add(credentials);
+        boolean saved = CredentialsStorage.getInstance().saveToFile();
+        if (!saved) {
+            throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"can not save credentials to file\"}").build());
+        }
         if (forceFetch) {
             new Fetcher(credentials).fetchUsersTo(UserChestsStorage.getInstance());
         }
-        return Response.ok("{\"status\":\"saved\"}").cookie(NewCookie.valueOf("vasya=petya")).build();
+        return Response.ok("{\"status\":\"saved\"}").build();
     }
 }

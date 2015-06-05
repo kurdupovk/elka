@@ -1,5 +1,6 @@
 package com.elka.storage;
 
+import java.io.Serializable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,7 +8,7 @@ import org.json.JSONObject;
  *
  * @author kkurdupov
  */
-public class Credentials {
+public class Credentials implements Serializable{
 
     private String sid;
     private String sessionKey;

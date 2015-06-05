@@ -31,7 +31,7 @@ public class Fetcher {
                 return;
             }
             if (credentials.isInvalid()) {
-                LOG.log(Level.INFO, "Current credentials are invalid");
+                LOG.log(Level.INFO, "Current credentials are invalid. No fetch process.");
                 return;
             }
             LOG.info("Starting users fetch.");

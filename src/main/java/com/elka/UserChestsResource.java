@@ -20,7 +20,7 @@ public class UserChestsResource {
     public String getUserChests() {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> credentialsMap = new HashMap<>();
-        Credentials credentials = CredentialsStorage.getInstance().getFrist();
+        Credentials credentials = CredentialsStorage.getInstance().get();
         credentialsMap.put("valid", credentials != null ? !credentials.isInvalid() : null);
         result.put("credentials", new JSONObject(credentialsMap));
         result.put("chests", new JSONArray(UserChestsStorage.getInstance().values()));
