@@ -102,6 +102,12 @@ var sortObject = function(_arg1){
         }
 */
 
+var signal = function(){
+    var audio = document.getElementById('audio');
+    audio.currentTime = 0;
+    audio.play();
+}
+
 var createTable = function(data){
     var oldTable = document.getElementById("users");
     var newTable = document.createElement('table');
@@ -117,8 +123,8 @@ var createTable = function(data){
         var td3 = document.createElement('td');
         var name = document.createTextNode(data[i].name);
         var time = data[i].time;
+        var now = new Date().getTime();
         if(time == 0){
-            var now = new Date().getTime();
             if(now - (data[i].logintime * 1000) > THEE_DAYS_MILLIS){
                 time = "not playing";
             } else {
@@ -126,6 +132,9 @@ var createTable = function(data){
             }
         } else {
             time = new Date(data[i].time * 1000 + NEXT_CHEST_TIME);
+            if((time - now < 30000) && (time - now > 0)){
+                signal();
+            }
         }
         var time  = document.createTextNode(time);
         var photo = document.createElement("img");
@@ -224,6 +233,10 @@ var interval = setInterval(start, 1000);
 start();
 </script>
 <body>
+<audio id="audio">
+  <source src="beep.mp3" type="audio/mpeg">
+Your browser does not support the audio element.
+</audio>
 <div id="overlay"></div>
 </body>
 </html>
