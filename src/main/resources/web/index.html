@@ -104,8 +104,10 @@ var sortObject = function(_arg1){
 
 var signal = function(){
     var audio = document.getElementById('audio');
-    audio.currentTime = 0;
-    audio.play();
+    if(audio.paused){
+        audio.currentTime = 0;
+        audio.play();
+    }
 }
 
 var createTable = function(data){
@@ -129,11 +131,13 @@ var createTable = function(data){
                 time = "not playing";
             } else {
                 time = "closed";
+                td3.style.backgroundColor = "greenyellow";
             }
         } else {
             time = new Date(data[i].time * 1000 + NEXT_CHEST_TIME);
             if((time - now < 30000) && (time - now > 0)){
                 signal();
+                td3.style.backgroundColor = "greenyellow";
             }
         }
         var time  = document.createTextNode(time);
