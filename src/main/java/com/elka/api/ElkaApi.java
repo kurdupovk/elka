@@ -63,6 +63,10 @@ public class ElkaApi {
             }
             throw new JSONException(responseString);
         }
+        JSONObject server = responseJson.optJSONObject("server");
+        if(server != null && server.has("reload")){
+            credentials.setInvalid(true);
+        }
         return responseJson;
     }
 
