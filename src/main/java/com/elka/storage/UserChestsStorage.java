@@ -59,7 +59,16 @@ public class UserChestsStorage {
                     + "\"hash\":\"aa011eae6ad83d65\",\"photo\":\"http://cs605621.vk.me/v605621095/b309/3sTKB3vbqYk.jpg\","
                     + "\"name\":\"Алена Шилкова\"},{\"userId\":\"santa\",\"sUserId\":\"santa\",\"level\":4,\"loginTime\":1431582854,\"likeStatus\":0,"
                     + "\"hash\":\"aa011eae6ad83d65\",\"photo\":\"\","
-                    + "\"name\":\"Дед мороз\"}]");
+                    + "\"name\":\"Дед мороз\"}, {"
+                    + "\"name\":\"Александра Соловьёва\","
+                    + "\"photo\":\"http://cs623826.vk.me/v623826384/4228c/PtwlsJVToUs.jpg\","
+                    + "\"userId\": 2225356,"
+                    + "\"sUserId\": \"215809384\","
+                    + "\"level\": 146,"
+                    + " \"loginTime\": 1434143193,"
+                    + "\"likeStatus\": 0,"
+                    + "\"hash\": \"a81d0dcc107022cf\""
+                    + "}]");
         } catch (JSONException ex) {
             Logger.getLogger(UserChestsStorage.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -69,8 +78,8 @@ public class UserChestsStorage {
     public void put(String userId, JSONObject json) {
         userChests.put(userId, json);
     }
-    
-    public JSONObject remove(String userId){
+
+    public JSONObject remove(String userId) {
         return userChests.remove(userId);
     }
 
