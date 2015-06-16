@@ -6,7 +6,6 @@ import com.elka.storage.UserChestsStorage;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.Executors;
@@ -50,6 +49,45 @@ public class Main {
                 if (CredentialsStorage.getInstance().isEmpty()) {
                     return;
                 }
+                /*JSONArray fetchedFriends = new JSONArray();
+                try {
+                    VKApi vkApi = new VKApi(CredentialsStorage.getInstance().get());
+                    JSONObject result = vkApi.getAppFriends();
+                    JSONArray ids = result.getJSONArray("response");
+                    List<String> friendIds = new ArrayList<>();
+                    for (int i = 0; i < ids.length(); i++) {
+                        friendIds.add(ids.getString(i));
+                    }
+                    result = vkApi.getAreFriends(friendIds);
+                    JSONArray areFriends = result.getJSONArray("response");
+                    result = vkApi.getUsers(friendIds);
+                    JSONArray users = result.getJSONArray("response");
+                    for (String friendId : friendIds) {
+                        JSONObject user = new JSONObject();
+                        user.put("userId", friendId);
+                        for (int i = 0; i < areFriends.length(); i++) {
+                            JSONObject areFriend = areFriends.getJSONObject(i);
+                            if (areFriend.getString("user_id").equals(friendId)) {
+                                user.put("sign", areFriend.getString("sign"));
+                                break;
+                            }
+                        }
+                        for (int i = 0; i < users.length(); i++) {
+                            JSONObject userJson = users.getJSONObject(i);
+                            if (userJson.getString("uid").equals(friendId)) {
+                                user.put("name", userJson.getString("first_name") + " " + userJson.getString("last_name"));
+                                user.put("photo", userJson.getString("photo"));
+                            }
+                        }
+                        fetchedFriends.put(user);
+                    }
+                    LOG.info("Friends:");
+                    LOG.info(fetchedFriends.toString(4));
+                } catch (IOException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (JSONException ex) {
+                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+                }*/
                 new Fetcher(CredentialsStorage.getInstance().get()).fetchUsersTo(UserChestsStorage.getInstance());
             }
         }, 5000, 60000, TimeUnit.MILLISECONDS);

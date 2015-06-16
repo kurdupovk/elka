@@ -3,12 +3,12 @@ package com.elka.api;
 import com.elka.storage.Credentials;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +36,8 @@ public class ElkaApi {
         return data;
     }
 
-    private static Map<String, Object> createParams(String userId, Integer chestId, Integer screenId, String sUserId) {
+    private static Map<String, Object> createParams(String userId, Integer chestId, Integer screenId, String sUserId,
+            List<String> friendIds) {
         Map<String, Object> params = new HashMap<>();
         if (userId != null) {
             params.put("userId", userId);
@@ -49,6 +50,10 @@ public class ElkaApi {
         }
         if (sUserId != null) {
             params.put("sUserId", sUserId);
+        }
+        if (friendIds != null) {
+            params.put("friendIds", new JSONArray(friendIds));
+            params.put("online", new JSONArray());
         }
         return params;
     }
@@ -64,7 +69,7 @@ public class ElkaApi {
             throw new JSONException(responseString);
         }
         JSONObject server = responseJson.optJSONObject("server");
-        if(server != null && server.has("reload")){
+        if (server != null && server.has("reload")) {
             credentials.setInvalid(true);
         }
         return responseJson;
@@ -74,7 +79,7 @@ public class ElkaApi {
         final String url = API_URL + "/friend/getFriend/";
 
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(friendId, 1, null, null);
+        Map<String, Object> params = createParams(friendId, 1, null, null, null);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
@@ -82,9 +87,17 @@ public class ElkaApi {
 
     public JSONObject getSantaChest() throws IOException, JSONException {
         final String url = API_URL + "/friend/getChest/";
-
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(null, 2, null, null);
+        Map<String, Object> params = createParams(null, 2, null, null, null);
+        data.put("params", new JSONObject(params));
+        JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
+        return sendRequest(url, sign);
+    }
+
+    public JSONObject init(List<String> friends) throws IOException, JSONException {
+        final String url = API_URL + "/game/init/";
+        Map<String, Object> data = defaultRequestData(credentials);
+        Map<String, Object> params = createParams(null, null, null, null, friends);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
@@ -99,7 +112,7 @@ public class ElkaApi {
     public JSONObject openChest(String friendId, String sFrindUserId) throws IOException, JSONException {
         final String url = API_URL + "/friend/openChest/";
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(friendId, 1, 1, sFrindUserId);
+        Map<String, Object> params = createParams(friendId, 1, 1, sFrindUserId, null);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
