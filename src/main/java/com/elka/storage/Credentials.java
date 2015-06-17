@@ -46,7 +46,7 @@ public class Credentials implements Serializable{
         return version;
     }
 
-    public long getAppId() {
+    public long getApiId() {
         return appId;
     }
 

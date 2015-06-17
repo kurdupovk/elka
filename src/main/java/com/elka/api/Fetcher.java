@@ -1,6 +1,7 @@
 package com.elka.api;
 
 import com.elka.storage.Credentials;
+import com.elka.storage.FriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import java.io.IOException;
 import java.util.Date;
@@ -25,16 +26,16 @@ public class Fetcher {
 
     public void fetchUsersTo(UserChestsStorage storage) {
         try {
-            JSONArray users = UserChestsStorage.definedUsers;
+            JSONArray users = FriendsStorage.getInstance().getFriends();
             if (users == null) {
                 LOG.log(Level.INFO, "Defined users must not be null");
                 return;
             }
             if (credentials.isInvalid()) {
-                LOG.log(Level.INFO, "Current credentials are invalid. No fetch process.");
+                LOG.log(Level.INFO, "Current credentials are invalid. No fetch users chetsts process.");
                 return;
             }
-            LOG.info("Starting users fetch.");
+            LOG.info("Starting fetching users chests.");
             try {
                 ElkaApi elkaApi = new ElkaApi(credentials);
                 for (int i = 0; i < users.length(); i++) {
@@ -61,7 +62,7 @@ public class Fetcher {
                     }
                 }
             } finally {
-                LOG.info("Users fetch finished.");
+                LOG.info("Users chests fetching is finished.");
             }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "There is an unhandled exception", ex);

@@ -35,12 +35,13 @@ public class VKApi {
         toSign += credentials.getSecret();
         String md5Hex = DigestUtils.md5Hex(toSign);
         params.put("sig", md5Hex);
+        params.put("sid", credentials.getSid());
         return md5Hex;
     }
 
     private static Map<String, Object> generateParams(Credentials credentials, String method) {
         Map<String, Object> params = new TreeMap<>();
-        params.put("api_id", credentials.getAppId());
+        params.put("api_id", credentials.getApiId());
         params.put("format", "json");
         params.put("method", method);
         params.put("rnd", new Random().nextInt(5500) + 3500);

@@ -28,7 +28,7 @@ public class ElkaApi {
     private static Map<String, Object> defaultRequestData(Credentials cred) {
         Map<String, Object> data = new HashMap<>();
         data.put("sessionKey", cred.getSessionKey());
-        data.put("aid", cred.getAppId());
+        data.put("aid", cred.getApiId());
         data.put("uid", cred.getUid());
         data.put("version", cred.getVersion());
         data.put("authKey", cred.getAuthKey());

@@ -1,20 +1,27 @@
 package com.elka;
 
+import com.elka.api.ElkaApi;
 import com.elka.storage.CredentialsStorage;
 import com.elka.api.Fetcher;
+import com.elka.api.VKApi;
+import com.elka.storage.FriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.grizzly.http.server.CLStaticHttpHandler;
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Main class.
@@ -42,58 +49,103 @@ public class Main {
 
     public static void main(String[] args) throws IOException, JSONException {
         CredentialsStorage.getInstance().loadFromFile();
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService executor2 = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
                 if (CredentialsStorage.getInstance().isEmpty()) {
                     return;
                 }
-                /*JSONArray fetchedFriends = new JSONArray();
+                new Fetcher(CredentialsStorage.getInstance().get()).fetchUsersTo(UserChestsStorage.getInstance());
+            }
+        }, 5000, 60000, TimeUnit.MILLISECONDS);
+        executor2.scheduleWithFixedDelay(new Runnable() {
+            @Override
+            public void run() {
+                if (CredentialsStorage.getInstance().isEmpty()) {
+                    return;
+                }
+                if (CredentialsStorage.getInstance().get().isInvalid()) {
+                    LOG.log(Level.INFO, "Current credentials are invalid. No fetch user profiles process.");
+                    return;
+                }
+                JSONArray fetchedFriends = new JSONArray();
+                LOG.info("Starting fetching users profiles.");
                 try {
                     VKApi vkApi = new VKApi(CredentialsStorage.getInstance().get());
+                    ElkaApi elkaApi = new ElkaApi(CredentialsStorage.getInstance().get());
                     JSONObject result = vkApi.getAppFriends();
                     JSONArray ids = result.getJSONArray("response");
                     List<String> friendIds = new ArrayList<>();
                     for (int i = 0; i < ids.length(); i++) {
                         friendIds.add(ids.getString(i));
                     }
+                    result = elkaApi.init(friendIds);
+                    JSONArray friendsArray = result.getJSONObject("data").getJSONArray("friends");
                     result = vkApi.getAreFriends(friendIds);
                     JSONArray areFriends = result.getJSONArray("response");
                     result = vkApi.getUsers(friendIds);
                     JSONArray users = result.getJSONArray("response");
+                    boolean found = false;
                     for (String friendId : friendIds) {
                         JSONObject user = new JSONObject();
-                        user.put("userId", friendId);
+                        for (int i = 0; i < friendsArray.length(); i++) {
+                            JSONObject friend = friendsArray.getJSONObject(i);
+                            if (friend.getString("sUserId").equals(friendId)) {
+                                user.put("userId", friend.getString("userId"));
+                                user.put("sUserId", friend.getString("sUserId"));
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            LOG.warning("Can not find user with id '" + friendId + "' in friends");
+                            continue;
+                        }
+                        found = false;
                         for (int i = 0; i < areFriends.length(); i++) {
                             JSONObject areFriend = areFriends.getJSONObject(i);
                             if (areFriend.getString("user_id").equals(friendId)) {
                                 user.put("sign", areFriend.getString("sign"));
+                                found = true;
                                 break;
                             }
                         }
+                        if (!found) {
+                            LOG.warning("Can not find user with id '" + friendId + "' in areFriends");
+                            continue;
+                        }
+                        found = false;
                         for (int i = 0; i < users.length(); i++) {
                             JSONObject userJson = users.getJSONObject(i);
                             if (userJson.getString("uid").equals(friendId)) {
                                 user.put("name", userJson.getString("first_name") + " " + userJson.getString("last_name"));
                                 user.put("photo", userJson.getString("photo"));
+                                found = true;
+                                break;
                             }
+                        }
+                        if (!found) {
+                            LOG.warning("Can not find user with id '" + friendId + "' in users");
+                            continue;
                         }
                         fetchedFriends.put(user);
                     }
+                    FriendsStorage.getInstance().setFriends(fetchedFriends);
                     LOG.info("Friends:");
-                    LOG.info(fetchedFriends.toString(4));
-                } catch (IOException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (JSONException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
-                new Fetcher(CredentialsStorage.getInstance().get()).fetchUsersTo(UserChestsStorage.getInstance());
+                    LOG.info(fetchedFriends.toString(2));
+                } catch (IOException | JSONException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                } finally {
+                    LOG.info("Users profiles fetching is finished.");
+                }
             }
-        }, 5000, 60000, TimeUnit.MILLISECONDS);
+        }, 1000, 600000, TimeUnit.MILLISECONDS);
         final HttpServer server = startServer();
         System.in.read();
         executor.shutdownNow();
+        executor2.shutdownNow();
         server.stop();
     }
 }
