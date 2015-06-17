@@ -1,6 +1,9 @@
 package com.elka.storage;
 
+import java.util.HashMap;
+import jersey.repackaged.com.google.common.collect.Maps;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -17,6 +20,17 @@ public class FriendsStorage {
     private FriendsStorage() {
     }
 
+    private void addSanta(JSONArray friends) {
+        HashMap<Object, Object> map = Maps.newHashMap();
+        map.put("userId", "santa");
+        map.put("sUserId", "santa");
+        map.put("photo", "");
+        map.put("name", "Дед мороз");
+        map.put("sign", "");
+        JSONObject santa = new JSONObject(map);
+        friends.put(santa);
+    }
+
     public static FriendsStorage getInstance() {
         return FriendsStorageHolder.INSTANCE;
     }
@@ -26,6 +40,7 @@ public class FriendsStorage {
     }
 
     public void setFriends(JSONArray friends) {
+        addSanta(friends);
         this.friends = friends;
     }
 }

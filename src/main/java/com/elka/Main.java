@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,8 @@ public class Main {
     private static final Logger LOG = Logger.getLogger(Main.class.getName());
     // Base URI the Grizzly HTTP server will listen on
     public static final String BASE_URI = "http://localhost:8080/elka/";
+    
+    private static final CountDownLatch CDL = new CountDownLatch(1);
 
     public static HttpServer startServer() {
         final ResourceConfig rc = new ResourceConfig().packages("com.elka");
@@ -46,20 +49,31 @@ public class Main {
                 + " - %5$s%6$s%n");
         LOG.setLevel(Level.ALL);
     }
+    
+    
 
-    public static void main(String[] args) throws IOException, JSONException {
-        CredentialsStorage.getInstance().loadFromFile();
-        final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        ScheduledExecutorService executor2 = Executors.newSingleThreadScheduledExecutor();
+    public static ScheduledExecutorService startChestFetcher() {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
+                try {
+                    CDL.await();
+                } catch (InterruptedException ex) {
+                   LOG.log(Level.SEVERE, null, ex);
+                }
                 if (CredentialsStorage.getInstance().isEmpty()) {
                     return;
                 }
                 new Fetcher(CredentialsStorage.getInstance().get()).fetchUsersTo(UserChestsStorage.getInstance());
             }
         }, 5000, 60000, TimeUnit.MILLISECONDS);
+        return executor;
+    }
+
+    public static void main(String[] args) throws IOException, JSONException {
+        CredentialsStorage.getInstance().loadFromFile();
+        ScheduledExecutorService executor2 = Executors.newSingleThreadScheduledExecutor();
         executor2.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
@@ -133,6 +147,7 @@ public class Main {
                         fetchedFriends.put(user);
                     }
                     FriendsStorage.getInstance().setFriends(fetchedFriends);
+                    CDL.countDown();
                     LOG.info("Friends:");
                     LOG.info(fetchedFriends.toString(2));
                 } catch (IOException | JSONException ex) {
@@ -141,10 +156,11 @@ public class Main {
                     LOG.info("Users profiles fetching is finished.");
                 }
             }
-        }, 1000, 600000, TimeUnit.MILLISECONDS);
+        }, 5000, 600000, TimeUnit.MILLISECONDS);
+        ScheduledExecutorService chestFetchedExecutor = startChestFetcher();
         final HttpServer server = startServer();
         System.in.read();
-        executor.shutdownNow();
+        chestFetchedExecutor.shutdownNow();
         executor2.shutdownNow();
         server.stop();
     }
