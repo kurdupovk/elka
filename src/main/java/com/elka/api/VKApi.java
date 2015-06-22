@@ -49,13 +49,19 @@ public class VKApi {
         return params;
     }
 
-    private static JSONObject sendRequest(Map<String, Object> params) throws IOException, JSONException {
+    private JSONObject sendRequest(Map<String, Object> params) throws IOException, JSONException {
         Form form = Form.form();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             form.add(entry.getKey(), entry.getValue().toString());
         }
         Content content = Request.Post(API_URL).bodyForm(form.build()).execute().returnContent();
-        return new JSONObject(content.asString());
+        String responseString = content.asString();
+        JSONObject result = new JSONObject(responseString);
+        if (result.has("error")) {
+            credentials.setInvalid(true);
+            throw new JSONException("Credentials are invalid: " + responseString);
+        }
+        return result;
     }
 
     public JSONObject getAppFriends() throws IOException, JSONException {

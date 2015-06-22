@@ -1,6 +1,6 @@
 package com.elka.api;
 
-import com.elka.storage.Credentials;
+import com.elka.storage.CredentialsStorage;
 import com.elka.storage.FriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import java.io.IOException;
@@ -15,29 +15,30 @@ import org.json.JSONObject;
  *
  * @author kkurdupov
  */
-public class Fetcher {
+public class UsersChestsFetcher {
 
-    private static final Logger LOG = Logger.getLogger(Fetcher.class.getName());
-    private final Credentials credentials;
+    private static final Logger LOG = Logger.getLogger(UsersChestsFetcher.class.getName());
+    private final CredentialsStorage credentialsStorage;
+    private final FriendsStorage friendsStorage;
 
-    public Fetcher(Credentials credentials) {
-        this.credentials = credentials;
+    public UsersChestsFetcher(CredentialsStorage credentials, FriendsStorage friendsStorage) {
+        this.credentialsStorage = credentials;
+        this.friendsStorage = friendsStorage;
     }
 
-    public void fetchUsersTo(UserChestsStorage storage) {
+    public void fetchTo(UserChestsStorage userChestStorage) {
         try {
-            JSONArray users = FriendsStorage.getInstance().getFriends();
-            if (users == null) {
-                LOG.log(Level.INFO, "Defined users must not be null");
+            if (credentialsStorage.isEmpty()) {
                 return;
             }
-            if (credentials.isInvalid()) {
-                LOG.log(Level.INFO, "Current credentials are invalid. No fetch users chetsts process.");
+            JSONArray users = friendsStorage.getFriends();
+            if (credentialsStorage.get().isInvalid()) {
+                LOG.log(Level.WARNING, "Current credentials are invalid. No fetch users chetsts process.");
                 return;
             }
             LOG.info("Starting fetching users chests.");
             try {
-                ElkaApi elkaApi = new ElkaApi(credentials);
+                ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
                 for (int i = 0; i < users.length(); i++) {
                     JSONObject user = users.getJSONObject(i);
                     String userId = user.getString("userId");
@@ -54,7 +55,7 @@ public class Fetcher {
                         chest.put("photo", user.getString("photo"));
                         chest.put("name", user.getString("name"));
                         chest.put("logintime", friend.getJSONObject("data").getJSONObject("user").getLong("loginTime"));
-                        storage.put(userId, chest);
+                        userChestStorage.put(userId, chest);
                     } catch (JSONException ex) {
                         LOG.log(Level.SEVERE, ex.getMessage());
                     } catch (IOException ex) {
