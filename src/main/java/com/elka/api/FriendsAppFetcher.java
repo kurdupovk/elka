@@ -1,7 +1,7 @@
 package com.elka.api;
 
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.FriendsStorage;
+import com.elka.storage.AppFriendsStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class FriendsAppFetcher {
         this.credentialsStorage = credentials;
     }
 
-    public void fetchTo(FriendsStorage storage) {
+    public void fetchTo(AppFriendsStorage storage) {
         if (credentialsStorage.isEmpty()) {
             return;
         }

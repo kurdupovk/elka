@@ -9,15 +9,15 @@ import org.json.JSONObject;
  *
  * @author Костя
  */
-public class FriendsStorage {
+public class AppFriendsStorage {
 
     private static class FriendsStorageHolder {
 
-        private static FriendsStorage INSTANCE = new FriendsStorage();
+        private static AppFriendsStorage INSTANCE = new AppFriendsStorage();
     }
     private JSONArray friends = new JSONArray();
 
-    private FriendsStorage() {
+    private AppFriendsStorage() {
     }
 
     private void addSanta(JSONArray friends) {
@@ -31,7 +31,7 @@ public class FriendsStorage {
         friends.put(santa);
     }
 
-    public static FriendsStorage getInstance() {
+    public static AppFriendsStorage getInstance() {
         return FriendsStorageHolder.INSTANCE;
     }
 

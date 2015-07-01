@@ -1,7 +1,8 @@
 package com.elka.api;
 
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.FriendsStorage;
+import com.elka.storage.AppFriendsStorage;
+import com.elka.storage.FriendsFriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import java.io.IOException;
 import java.util.Date;
@@ -19,11 +20,13 @@ public class UsersChestsFetcher {
 
     private static final Logger LOG = Logger.getLogger(UsersChestsFetcher.class.getName());
     private final CredentialsStorage credentialsStorage;
-    private final FriendsStorage friendsStorage;
+    private final AppFriendsStorage friendsStorage;
+    private final FriendsFriendsStorage friendsFriendsStorage;
 
-    public UsersChestsFetcher(CredentialsStorage credentials, FriendsStorage friendsStorage) {
+    public UsersChestsFetcher(CredentialsStorage credentials, AppFriendsStorage friendsStorage, FriendsFriendsStorage friendsFriendsStorage) {
         this.credentialsStorage = credentials;
         this.friendsStorage = friendsStorage;
+        this.friendsFriendsStorage = friendsFriendsStorage;
     }
 
     public void fetchTo(UserChestsStorage userChestStorage) {
@@ -55,6 +58,16 @@ public class UsersChestsFetcher {
                         chest.put("photo", user.getString("photo"));
                         chest.put("name", user.getString("name"));
                         chest.put("logintime", friend.getJSONObject("data").getJSONObject("user").getLong("loginTime"));
+                        String openedByUser = chest.getString("user");
+                        JSONObject friendFriend = friendsFriendsStorage.get(openedByUser);
+                        if (friendFriend != null) {
+                            JSONObject openedBy = new JSONObject();
+                            openedBy.put("userId", openedByUser);
+                            openedBy.put("name", friendFriend.getString("name"));
+                            openedBy.put("photo", friendFriend.getString("photo"));
+                            chest.put("openedBy", openedBy);
+                            chest.remove("user");
+                        }
                         userChestStorage.put(userId, chest);
                     } catch (JSONException ex) {
                         LOG.log(Level.SEVERE, ex.getMessage());

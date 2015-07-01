@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Content;
 import org.apache.http.client.fluent.Form;
 import org.apache.http.client.fluent.Request;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,7 +58,7 @@ public class VKApi {
         Content content = Request.Post(API_URL).bodyForm(form.build()).execute().returnContent();
         String responseString = content.asString();
         JSONObject result = new JSONObject(responseString);
-        if (result.has("error")) {
+        if (result.has("error") && result.optJSONObject("error").optInt("error_code") == 3) {
             credentials.setInvalid(true);
             throw new JSONException("Credentials are invalid: " + responseString);
         }
@@ -85,5 +86,16 @@ public class VKApi {
         params.put("uids", StringUtils.join(friends, ","));
         sign(params, credentials);
         return sendRequest(params);
+    }
+
+    public JSONArray getFriends(String userId) throws IOException, JSONException {
+        Map<String, Object> params = generateParams(credentials, "friends.get");
+        params.put("fields", "photo");
+        params.put("user_id", userId);
+        params.put("count", 5000);
+        params.put("offset", 0);
+        params.put("v", "5.34");
+        sign(params, credentials);
+        return sendRequest(params).getJSONObject("response").getJSONArray("items");
     }
 }

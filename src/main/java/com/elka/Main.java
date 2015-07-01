@@ -3,7 +3,9 @@ package com.elka;
 import com.elka.storage.CredentialsStorage;
 import com.elka.api.UsersChestsFetcher;
 import com.elka.api.FriendsAppFetcher;
-import com.elka.storage.FriendsStorage;
+import com.elka.api.FriendsFriendsFetcher;
+import com.elka.storage.AppFriendsStorage;
+import com.elka.storage.FriendsFriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -46,7 +48,8 @@ public class Main {
         executor.scheduleWithFixedDelay(new Runnable() {
             @Override
             public void run() {
-                new UsersChestsFetcher(CredentialsStorage.getInstance(), FriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
+                new UsersChestsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance(),
+                        FriendsFriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
             }
         }, 5000, 60000, TimeUnit.MILLISECONDS);
         return executor;
@@ -55,7 +58,8 @@ public class Main {
     public static void main(String[] args) throws IOException, JSONException {
         final HttpServer server = startServer();
         CredentialsStorage.getInstance().loadFromFile();
-        new FriendsAppFetcher(CredentialsStorage.getInstance()).fetchTo(FriendsStorage.getInstance());
+        new FriendsAppFetcher(CredentialsStorage.getInstance()).fetchTo(AppFriendsStorage.getInstance());
+        new FriendsFriendsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance()).fetchTo(FriendsFriendsStorage.getInstance());
         ScheduledExecutorService chestFetchedExecutor = startChestFetcher();
         System.in.read();
         chestFetchedExecutor.shutdownNow();

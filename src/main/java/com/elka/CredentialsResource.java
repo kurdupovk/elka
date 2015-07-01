@@ -2,9 +2,11 @@ package com.elka;
 
 import com.elka.api.UsersChestsFetcher;
 import com.elka.api.FriendsAppFetcher;
+import com.elka.api.FriendsFriendsFetcher;
 import com.elka.storage.Credentials;
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.FriendsStorage;
+import com.elka.storage.AppFriendsStorage;
+import com.elka.storage.FriendsFriendsStorage;
 import com.elka.storage.UserChestsStorage;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -40,8 +42,10 @@ public class CredentialsResource {
             throw new WebApplicationException(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"error\":\"can not save credentials to file\"}").build());
         }
         if (forceFetch) {
-            new FriendsAppFetcher(CredentialsStorage.getInstance()).fetchTo(FriendsStorage.getInstance());
-            new UsersChestsFetcher(CredentialsStorage.getInstance(), FriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
+            new FriendsAppFetcher(CredentialsStorage.getInstance()).fetchTo(AppFriendsStorage.getInstance());
+            new FriendsFriendsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance()).fetchTo(FriendsFriendsStorage.getInstance());
+            new UsersChestsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance(),
+                    FriendsFriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
         }
         return Response.ok("{\"status\":\"saved\"}").build();
     }
