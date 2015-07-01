@@ -43,4 +43,14 @@ public class AppFriendsStorage {
         addSanta(friends);
         this.friends = friends;
     }
+
+    public JSONObject getFriend(String userId) {
+        for (int i = 0; i < friends.length(); i++) {
+            JSONObject friend = friends.optJSONObject(i);
+            if (friend.optString("userId").equals(userId)) {
+                return friend;
+            }
+        }
+        return null;
+    }
 }

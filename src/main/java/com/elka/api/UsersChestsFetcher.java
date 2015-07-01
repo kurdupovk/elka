@@ -20,12 +20,12 @@ public class UsersChestsFetcher {
 
     private static final Logger LOG = Logger.getLogger(UsersChestsFetcher.class.getName());
     private final CredentialsStorage credentialsStorage;
-    private final AppFriendsStorage friendsStorage;
+    private final AppFriendsStorage appFriendsStorage;
     private final FriendsFriendsStorage friendsFriendsStorage;
 
     public UsersChestsFetcher(CredentialsStorage credentials, AppFriendsStorage friendsStorage, FriendsFriendsStorage friendsFriendsStorage) {
         this.credentialsStorage = credentials;
-        this.friendsStorage = friendsStorage;
+        this.appFriendsStorage = friendsStorage;
         this.friendsFriendsStorage = friendsFriendsStorage;
     }
 
@@ -34,7 +34,7 @@ public class UsersChestsFetcher {
             if (credentialsStorage.isEmpty()) {
                 return;
             }
-            JSONArray users = friendsStorage.getFriends();
+            JSONArray appFriends = appFriendsStorage.getFriends();
             if (credentialsStorage.get().isInvalid()) {
                 LOG.log(Level.WARNING, "Current credentials are invalid. No fetch users chetsts process.");
                 return;
@@ -42,21 +42,21 @@ public class UsersChestsFetcher {
             LOG.info("Starting fetching users chests.");
             try {
                 ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
-                for (int i = 0; i < users.length(); i++) {
-                    JSONObject user = users.getJSONObject(i);
-                    String userId = user.getString("userId");
+                for (int i = 0; i < appFriends.length(); i++) {
+                    JSONObject appFriend = appFriends.getJSONObject(i);
+                    String appFriendId = appFriend.getString("userId");
                     try {
                         JSONObject friend = null;
-                        if (userId.equals("santa")) {
+                        if (appFriendId.equals("santa")) {
                             friend = elkaApi.getSantaChest();
                             JSONObject userJSON = new JSONObject().put("loginTime", new Date().getTime() / 1000);
                             friend.getJSONObject("data").put("user", userJSON);
                         } else {
-                            friend = elkaApi.getFriend(userId);
+                            friend = elkaApi.getFriend(appFriendId);
                         }
                         JSONObject chest = friend.getJSONObject("data").getJSONObject("chest");
-                        chest.put("photo", user.getString("photo"));
-                        chest.put("name", user.getString("name"));
+                        chest.put("photo", appFriend.getString("photo"));
+                        chest.put("name", appFriend.getString("name"));
                         chest.put("logintime", friend.getJSONObject("data").getJSONObject("user").getLong("loginTime"));
                         String openedByUser = chest.getString("user");
                         JSONObject friendFriend = friendsFriendsStorage.get(openedByUser);
@@ -68,11 +68,11 @@ public class UsersChestsFetcher {
                             chest.put("openedBy", openedBy);
                             chest.remove("user");
                         }
-                        userChestStorage.put(userId, chest);
+                        userChestStorage.put(appFriendId, chest);
                     } catch (JSONException ex) {
                         LOG.log(Level.SEVERE, ex.getMessage());
                     } catch (IOException ex) {
-                        LOG.log(Level.SEVERE, "Can not request user - " + user.optString("name") + ". Message: " + ex.getMessage());
+                        LOG.log(Level.SEVERE, "Can not request user - " + appFriend.optString("name") + ". Message: " + ex.getMessage());
                     }
                 }
             } finally {

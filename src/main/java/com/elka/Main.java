@@ -1,5 +1,6 @@
 package com.elka;
 
+import com.elka.api.ChestUnlockerCollection;
 import com.elka.storage.CredentialsStorage;
 import com.elka.api.UsersChestsFetcher;
 import com.elka.api.FriendsAppFetcher;
@@ -50,6 +51,8 @@ public class Main {
             public void run() {
                 new UsersChestsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance(),
                         FriendsFriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
+                ChestUnlockerCollection.getInstance().startWith(UserChestsStorage.getInstance(), CredentialsStorage.getInstance(),
+                        AppFriendsStorage.getInstance());
             }
         }, 5000, 60000, TimeUnit.MILLISECONDS);
         return executor;
@@ -63,6 +66,7 @@ public class Main {
         ScheduledExecutorService chestFetchedExecutor = startChestFetcher();
         System.in.read();
         chestFetchedExecutor.shutdownNow();
+        ChestUnlockerCollection.getInstance().shutDown();
         server.stop();
     }
 }
