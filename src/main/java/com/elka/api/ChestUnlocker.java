@@ -67,7 +67,7 @@ public class ChestUnlocker extends Thread {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         } catch (JSONException ex) {
-            LOG.log(Level.WARNING, ex.getMessage());
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
         } finally {
             chestUnlockerCollection.remove(this);
             log("has been released.");

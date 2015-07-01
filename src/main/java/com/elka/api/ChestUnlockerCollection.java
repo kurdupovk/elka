@@ -33,11 +33,6 @@ public class ChestUnlockerCollection {
     }
 
     private static boolean isChestValid(JSONObject chest) {
-        int chestTime = chest.optInt("time");
-        if (chestTime == 0) {
-            LOG.info("Unlocker will be started next cycle for chest - " + chest.toString());
-            return false;
-        }
         int loginTime = chest.optInt("logintime");
         long now = System.currentTimeMillis() / 1000;
         if (now - loginTime > THREE_DAYS) {
