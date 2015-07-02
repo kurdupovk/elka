@@ -43,14 +43,17 @@ public class ChestUnlocker extends Thread {
     public void run() {
         try {
             long timeToSleep = nextChestTime - System.currentTimeMillis();
-            log("is going to sleep " + timeToSleep + " milliseconds");
-            Thread.sleep(timeToSleep);
+            if (timeToSleep > 0) {
+                log("is going to sleep " + timeToSleep + " milliseconds");
+                Thread.sleep(timeToSleep);
+            }
+            log("is going to open chest");
             ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
             for (int i = 0; i < 10; i++) {
                 JSONObject openChest = elkaApi.openChest(userId, sUserId, user.optString("sign"));
                 JSONObject data = openChest.getJSONObject("data");
-                boolean isOpenedByMe = !data.has("chest") && data.optInt("success") == 1;
-                boolean isOpenedByOther = data.has("chest") && data.getJSONObject("chest").getInt("time") != chestTime;
+                boolean isOpenedByMe = data.optJSONObject("awards") != null && data.optInt("success") == 1;
+                boolean isOpenedByOther = data.optJSONObject("chest") != null && data.getJSONObject("chest").getInt("time") > chestTime;
                 if (isOpenedByMe || isOpenedByOther) {
                     if (isOpenedByMe) {
                         log("opened chest by me. Awards - " + data.getJSONObject("awards").toString());
@@ -102,9 +105,5 @@ public class ChestUnlocker extends Thread {
             return false;
         }
         return true;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(new Date(1435725332 * 1000l));
     }
 }

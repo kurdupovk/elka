@@ -1,5 +1,6 @@
 package com.elka;
 
+import com.elka.api.ChestUnlockerCollection;
 import com.elka.api.UsersChestsFetcher;
 import com.elka.api.FriendsAppFetcher;
 import com.elka.api.FriendsFriendsFetcher;
@@ -46,6 +47,8 @@ public class CredentialsResource {
             new FriendsFriendsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance()).fetchTo(FriendsFriendsStorage.getInstance());
             new UsersChestsFetcher(CredentialsStorage.getInstance(), AppFriendsStorage.getInstance(),
                     FriendsFriendsStorage.getInstance()).fetchTo(UserChestsStorage.getInstance());
+            ChestUnlockerCollection.getInstance().startWith(UserChestsStorage.getInstance(), CredentialsStorage.getInstance(),
+                        AppFriendsStorage.getInstance());
         }
         return Response.ok("{\"status\":\"saved\"}").build();
     }
