@@ -1,5 +1,9 @@
 <html>
+<link rel="stylesheet" href="jquery-ui.structure.min.css">
+<link rel="stylesheet" href="jquery-ui.min.css">
+
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="jquery-ui.min.js"></script>
 <script type="text/javascript">
 
 var NEXT_CHEST_TIME = 1000 * 3600 * 6;
@@ -120,19 +124,31 @@ var createLoginDiv = function(){
     div.appendChild(button);
     document.body.appendChild(div);
 }
+
+var initExpiditions = function(expiditions) {
+    $("#active_expeditions li").remove();
+    for(i in expiditions){
+        var item = $("#available_expeditions").find("[exp_id=" + expiditions[i]["data_id"] + "]");
+        if(item.length == 0) {
+            continue;
+        }
+        item.clone().appendTo($("#active_expeditions"));
+    }
+}
 var failedRequests = 0;
 var start = function(){
     $.post('http://localhost:8080/elka/userchests', "", function(d){
-        if(d.credentials.valid){
-            removeLoginDiv();
-            createTable(d.chests);
-        } else {
+        if(!d.credentials.valid){
             var table = document.getElementById("users");
             if(table != null){
                 document.body.removeChild(table);
             }
             createLoginDiv();
+            return;
         }
+        removeLoginDiv();
+        createTable(d.chests);
+        initExpiditions(d.expiditions.active);
     }).fail(function(a,b,c){
       failedRequests++;
       if(failedRequests >= 10){
@@ -157,6 +173,44 @@ var start = function(){
 }
 var interval = setInterval(start, 1000);
 start();
+
+$(document).ready(function(){
+    $('#available_expeditions').accordion();
+    $('#available_expeditions li').draggable({cursor:'move', helper: 'clone', activeClass: "ui-state-default", hoverClass: "ui-state-hover"});
+    $('#saved_expeditions').droppable({
+        drop: function( event, ui ) {
+            var count = 0;
+            $("#saved_expeditions li").each(function(i, item){ 
+                count += parseInt($(item).attr("deer"));
+            });
+            if(count + parseInt(ui.draggable.attr("deer")) > 6) {
+                return;
+            }
+            ui.draggable.clone().draggable().appendTo(this);
+            var ids = [];
+            $("#saved_expeditions li").each(function(i, item){ 
+                ids.push($(item).attr("exp_id"));
+            });
+            $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
+                console.log(d);
+            }).fail(function(a){
+                alert(a.responseText);
+            });
+        },
+        out: function(event, ui) {
+            ui.helper.remove();
+            var ids = [];
+            $("#saved_expeditions li").each(function(i, item){ 
+                ids.push($(item).attr("exp_id"));
+            });
+            $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
+                console.log(d);
+            }).fail(function(a){
+                alert(a.responseText);
+            });
+        }
+    });
+});
 </script>
 <body>
 <audio id="audio">
@@ -164,5 +218,54 @@ start();
 Your browser does not support the audio element.
 </audio>
 <div id="overlay"></div>
+<div id="expeditions_info" style="width: 600px;float: right; margin-right: 400px;">
+    <fieldset>
+        <legend>Экспедиции</legend>
+        <fieldset>
+            <legend>Доступные экспедиции</legend>
+            <div id="available_expeditions">
+                <h4><a href="#">Зима</a></h4>
+                <div>
+                    <ul>
+                        <li exp_id="1" deer="1">Гренландия(3-5, 1ч., 1 олень)</li>
+                        <li exp_id="2" deer="2">Лапландия(5-16, 2ч., 2 оленя)</li>
+                        <li exp_id="3" deer="3">Аляска(15-40, 4ч., 3 оленя)</li>
+                        <li exp_id="4" deer="4">Южный полюс(30-100, 8ч., 4 оленя)</li>
+                        <li exp_id="5" deer="5">Северный полюс(50-250, 16ч., 5 оленей)</li>
+                        <li exp_id="6" deer="6">Великий Устюг(100-300, 24ч., 6 оленей)</li>
+                    </ul>
+                </div>
+                <h4><a href="#">Весна</a></h4>
+                <div>
+                    <ul>
+                        <li exp_id="7" deer="1">Страна Тюльпанов(4-6, 1ч., 1 олень)</li>
+                        <li exp_id="8" deer="2">Луга Ромашек(6-17, 2ч., 2 оленя)</li>
+                        <li exp_id="9" deer="3">Сады Сирени(17-45, 4ч., 3 оленя)</li>
+                        <li exp_id="10" deer="4">Озеро Лиллий(35-110, 8ч., 4 оленя)</li>
+                        <li exp_id="11" deer="5">Парк Роз(50-275, 16ч., 5 оленей)</li>
+                        <li exp_id="12" deer="6">Поля Клевера(110-330, 24ч., 6 оленей)</li>
+                    </ul>
+                </div>
+                <h4><a href="#">Лето</a></h4>
+                <div>
+                    <ul>
+                        <li exp_id="13" deer="1">Поля Пшеницы(4-6, 1ч., 1 олень)</li>
+                        <li exp_id="14" deer="2">Поля Кукурузы(6-18, 2ч., 2 оленя)</li>
+                        <li exp_id="15" deer="3">Поля Подсолнухов(18-48, 4ч., 3 оленя)</li>
+                        <li exp_id="16" deer="4">Сливовый Сад(36-120, 8ч., 4 оленя)</li>
+                        <li exp_id="17" deer="5">Яблоневый Сад(60-300, 16ч., 5 оленей)</li>
+                        <li exp_id="18" deer="6">Грушевый Сад(120-360, 24ч., 6 оленей)</li>
+                    </ul>
+                </div>
+            </div>
+        </fieldset>
+        <fieldset id="saved_expeditions">
+            <legend>Сохраненные экспедиции</legend>
+        </fieldset>
+        <fieldset id="active_expeditions">
+            <legend>Активные экспедиции</legend>
+        </fieldset>
+    </fieldset>
+</div>
 </body>
 </html>

@@ -1,8 +1,7 @@
 package com.elka.api;
 
-import com.elka.storage.AppFriendsStorage;
+import com.elka.storage.ApplicationStorage;
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.FriendsFriendsStorage;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,14 +17,12 @@ public class FriendsFriendsFetcher {
 
     private static final Logger LOG = Logger.getLogger(FriendsFriendsFetcher.class.getName());
     private CredentialsStorage credentialsStorage;
-    private AppFriendsStorage appFriendsStorage;
 
-    public FriendsFriendsFetcher(CredentialsStorage credentials, AppFriendsStorage appFriendsStorage) {
+    public FriendsFriendsFetcher(CredentialsStorage credentials) {
         this.credentialsStorage = credentials;
-        this.appFriendsStorage = appFriendsStorage;
     }
 
-    public void fetchTo(FriendsFriendsStorage friendsFriendsStorage) {
+    public void fetchTo(ApplicationStorage applicationStorage) {
         if (credentialsStorage.isEmpty()) {
             return;
         }
@@ -36,8 +33,7 @@ public class FriendsFriendsFetcher {
         VKApi vkApi = new VKApi(credentialsStorage.get());
         LOG.info("Starting fetching friends of friends.");
         try {
-            for (int i = 0; i < appFriendsStorage.getFriends().length(); i++) {
-                JSONObject friend = appFriendsStorage.getFriends().getJSONObject(i);
+            for (JSONObject friend : applicationStorage.getFriends().values()) {
                 String sUserId = friend.getString("sUserId");
                 if (sUserId.equals("santa")) {
                     continue;
@@ -49,7 +45,7 @@ public class FriendsFriendsFetcher {
                     result.put("name", friendFriend.getString("first_name") + " " + friendFriend.getString("last_name"));
                     result.put("photo", friendFriend.getString("photo"));
                     result.put("id", friendFriend.getString("id"));
-                    friendsFriendsStorage.put(friendFriend.getString("id"), result);
+                    applicationStorage.getFriendsOfFriends().put(friendFriend.getString("id"), result);
                 }
             }
         } catch (JSONException ex) {
@@ -57,7 +53,7 @@ public class FriendsFriendsFetcher {
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, ex.getMessage(), ex);
         } finally {
-            LOG.info("Fetching friends of friends finished. Count - " + friendsFriendsStorage.size());
+            LOG.info("Fetching friends of friends finished. Count - " + applicationStorage.getFriendsOfFriends().size());
         }
     }
 }

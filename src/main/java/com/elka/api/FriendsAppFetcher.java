@@ -1,7 +1,7 @@
 package com.elka.api;
 
+import com.elka.storage.ApplicationStorage;
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.AppFriendsStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class FriendsAppFetcher {
         this.credentialsStorage = credentials;
     }
 
-    public void fetchTo(AppFriendsStorage storage) {
+    public void fetchTo(ApplicationStorage applicationStorage) {
         if (credentialsStorage.isEmpty()) {
             return;
         }
@@ -32,7 +32,6 @@ public class FriendsAppFetcher {
             LOG.log(Level.WARNING, "Current credentials are invalid. No fetch user profiles process.");
             return;
         }
-        JSONArray fetchedFriends = new JSONArray();
         LOG.info("Starting fetching users profiles.");
         try {
             VKApi vkApi = new VKApi(credentialsStorage.get());
@@ -44,6 +43,7 @@ public class FriendsAppFetcher {
                 friendIds.add(ids.getString(i));
             }
             result = elkaApi.init(friendIds);
+            applicationStorage.getExpiditions().parseActiveExpiditions(result);
             JSONArray friendsArray = result.getJSONObject("data").getJSONArray("friends");
             result = vkApi.getAreFriends(friendIds);
             JSONArray areFriends = result.getJSONArray("response");
@@ -92,11 +92,11 @@ public class FriendsAppFetcher {
                     LOG.warning("Can not find user with id '" + friendId + "' in users");
                     continue;
                 }
-                fetchedFriends.put(user);
+                applicationStorage.getFriends().put(user.getString("userId"), user);
             }
-            storage.setFriends(fetchedFriends);
+            applicationStorage.getFriends().put(ApplicationStorage.SANTA.getString("userId"), ApplicationStorage.SANTA);
             LOG.info("Fetched friends:");
-            LOG.info(fetchedFriends.toString(2));
+            LOG.info(new JSONArray(applicationStorage.getFriends().values()).toString(2));
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         } catch (JSONException ex) {

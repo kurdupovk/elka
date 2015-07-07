@@ -1,8 +1,8 @@
 package com.elka;
 
+import com.elka.storage.ApplicationStorage;
 import com.elka.storage.Credentials;
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.UserChestsStorage;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.POST;
@@ -20,10 +20,14 @@ public class UserChestsResource {
     public String getUserChests() {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> credentialsMap = new HashMap<>();
+        Map<String, Object> expedtions = new HashMap<>();
         Credentials credentials = CredentialsStorage.getInstance().get();
         credentialsMap.put("valid", credentials != null ? !credentials.isInvalid() : null);
         result.put("credentials", new JSONObject(credentialsMap));
-        result.put("chests", new JSONArray(UserChestsStorage.getInstance().values()));
+        result.put("chests", new JSONArray(ApplicationStorage.getInstance().getUserChests().values()));
+        expedtions.put("active", new JSONArray(ApplicationStorage.getInstance().getExpiditions().getActive()));
+        expedtions.put("saved", new JSONArray(ApplicationStorage.getInstance().getExpiditions().getSaved()));
+        result.put("expiditions", new JSONObject(expedtions));
         return new JSONObject(result).toString();
     }
 }

@@ -1,8 +1,7 @@
 package com.elka.api;
 
-import com.elka.storage.AppFriendsStorage;
+import com.elka.storage.ApplicationStorage;
 import com.elka.storage.CredentialsStorage;
-import com.elka.storage.UserChestsStorage;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +40,7 @@ public class ChestUnlockerCollection {
         return true;
     }
 
-    public void startWith(UserChestsStorage userChestsStorage, CredentialsStorage credentialsStorage, AppFriendsStorage appFriendsStorage) {
+    public void startWith(CredentialsStorage credentialsStorage, ApplicationStorage applicationStorage) {
         if (credentialsStorage.isEmpty()) {
             return;
         }
@@ -49,10 +48,10 @@ public class ChestUnlockerCollection {
             LOG.log(Level.WARNING, "Current credentials are invalid. No start open chest process");
             return;
         }
-        for (Map.Entry<String, JSONObject> entry : userChestsStorage.asMap().entrySet()) {
+        for (Map.Entry<String, JSONObject> entry : applicationStorage.getUserChests().entrySet()) {
             JSONObject chest = entry.getValue();
             if (isChestValid(chest)) {
-                add(new ChestUnlocker(this, credentialsStorage, chest.optInt("time"), appFriendsStorage.getFriend(entry.getKey())));
+                add(new ChestUnlocker(this, credentialsStorage, chest.optInt("time"), applicationStorage.getFriends().get(entry.getKey())));
             }
         }
     }
