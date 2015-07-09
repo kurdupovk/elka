@@ -6,9 +6,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -23,6 +23,7 @@ public class Expiditions {
 
     public static final int TOTAL_DEERS = 6;
     private final List<Expidition> expiditions = new CopyOnWriteArrayList<>();
+    ReentrantLock lock = new ReentrantLock();
 
     private class Expidition implements Runnable {
 
@@ -64,7 +65,8 @@ public class Expiditions {
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             } catch (JSONException ex) {
-                logger.log(Level.WARNING, "Error with json parsing", ex);
+                logger.log(Level.WARNING, "Error with json parsing. Expiditions count - " + expiditions.size(), ex);
+                expiditions.remove(Expidition.this);
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, "Thread has been interrupted", ex);
             } catch (Exception ex) {
@@ -95,8 +97,9 @@ public class Expiditions {
             if (!started.has("data")) {
                 throw new JSONException(started.toString());
             }
-            assignedId = started.getString("id");
-            timeEnd = started.getInt("timeEnd");
+            JSONObject data = started.getJSONObject("data");
+            assignedId = data.getString("id");
+            timeEnd = data.getInt("timeEnd");
             logger.info("Expidition '" + id + "' started with assigned id " + assignedId);
         }
 
@@ -176,15 +179,15 @@ public class Expiditions {
         if (countOfDeers > TOTAL_DEERS) {
             return false;
         }
-        Iterator<Expidition> it = expiditions.iterator();
-        while (it.hasNext()) {
-            Expidition next = it.next();
-            if (next.isActive()) {
-                next.repeatable = false;
+        List<Expidition> toDelete = new ArrayList<>();
+        for (Expidition expidition : expiditions) {
+            if (expidition.isActive()) {
+                expidition.repeatable = false;
             } else {
-                it.remove();
+                toDelete.add(expidition);
             }
         }
+        expiditions.removeAll(toDelete);
         for (String id : toSave) {
             expiditions.add(new Expidition(id, null, null, true));
         }
@@ -193,18 +196,23 @@ public class Expiditions {
     }
 
     private void runExpiditions() {
-        List<String> active = getActive();
-        int busyDeers = 0;
-        for (String id : active) {
-            busyDeers += getCountDeersById(Integer.parseInt(id));
-        }
-        int freeDeers = TOTAL_DEERS - busyDeers;
-        if (freeDeers <= 0) {
-            return;
-        }
-        List<Expidition> acceptable = findAcceptableExpiditions(freeDeers);
-        for (Expidition expidition : acceptable) {
-            expidition.send();
+        lock.lock();
+        try {
+            List<String> active = getActive();
+            int busyDeers = 0;
+            for (String id : active) {
+                busyDeers += getCountDeersById(Integer.parseInt(id));
+            }
+            int freeDeers = TOTAL_DEERS - busyDeers;
+            if (freeDeers <= 0) {
+                return;
+            }
+            List<Expidition> acceptable = findAcceptableExpiditions(freeDeers);
+            for (Expidition expidition : acceptable) {
+                expidition.send();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
