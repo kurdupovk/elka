@@ -57,7 +57,8 @@ public class Expiditions {
                 setName(worker);
                 int now = (int) (System.currentTimeMillis() / 1000);
                 if (timeEnd > now) {
-                    Thread.sleep(timeEnd - now + 5000);
+                    logger.info(worker.getName() + " is going to sleep " + (timeEnd - now) / 60 + " mins");
+                    Thread.sleep((timeEnd - now) * 1000L + 5000);
                 }
                 endExpidition(elkaApi);
             } catch (IOException ex) {
@@ -141,7 +142,7 @@ public class Expiditions {
         JSONArray exps = init.optJSONObject("data").optJSONArray("expeditions");
         for (int i = 0; i < exps.length(); i++) {
             JSONObject exp = exps.optJSONObject(i);
-            Expidition expidition = new Expidition(exp.optString("data_id"), exp.optInt("time_end"), exp.optString("id"), false);
+            Expidition expidition = new Expidition(exp.optString("data_id"), exp.optInt("time_end"), exp.optString("expedition_id"), false);
             expiditions.add(expidition);
             expidition.send();
         }

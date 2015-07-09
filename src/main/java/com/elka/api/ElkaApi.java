@@ -132,7 +132,8 @@ public class ElkaApi {
     public JSONObject startExpidition(String expiditionId) throws IOException, JSONException {
         final String url = API_URL + "/expedition/start/";
         Map<String, Object> data = defaultRequestData(credentials);
-        data.put("params", createParams(null, null, null, expiditionId, null, null, null));
+        Map<String, Object> params = createParams(null, null, null, expiditionId, null, null, null);
+        data.put("params", new JSONObject(params));
         JSONObject signParams = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, signParams);
     }
@@ -140,7 +141,8 @@ public class ElkaApi {
     public JSONObject endExpidition(String startedExpiditionId) throws IOException, JSONException {
         final String url = API_URL + "/expedition/end/";
         Map<String, Object> data = defaultRequestData(credentials);
-        data.put("params", createParams(null, null, null, startedExpiditionId, null, null, null));
+        Map<String, Object> params = createParams(null, null, null, startedExpiditionId, null, null, null);
+        data.put("params", new JSONObject(params));
         JSONObject signParams = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, signParams);
     }
