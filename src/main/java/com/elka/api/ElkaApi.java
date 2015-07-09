@@ -36,8 +36,8 @@ public class ElkaApi {
         return data;
     }
 
-    private static Map<String, Object> createParams(String userId, Integer chestId, Integer screenId, String sUserId,
-            String sign, List<String> friendIds) {
+    private static Map<String, Object> createParams(String userId, Integer chestId, Integer screenId, String expiditionId,
+            String sUserId, String sign, List<String> friendIds) {
         Map<String, Object> params = new HashMap<>();
         if (userId != null) {
             params.put("userId", userId);
@@ -53,6 +53,9 @@ public class ElkaApi {
         }
         if (sign != null) {
             params.put("sign", sign);
+        }
+        if (expiditionId != null) {
+            params.put("id", expiditionId);
         }
         if (friendIds != null) {
             params.put("friendIds", new JSONArray(friendIds));
@@ -82,7 +85,7 @@ public class ElkaApi {
         final String url = API_URL + "/friend/getFriend/";
 
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(friendId, 1, null, null, null, null);
+        Map<String, Object> params = createParams(friendId, 1, null, null, null, null, null);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
@@ -91,7 +94,7 @@ public class ElkaApi {
     public JSONObject getSantaChest() throws IOException, JSONException {
         final String url = API_URL + "/friend/getChest/";
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(null, 2, null, null, null, null);
+        Map<String, Object> params = createParams(null, 2, null, null, null, null, null);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
@@ -100,7 +103,7 @@ public class ElkaApi {
     public JSONObject init(List<String> friends) throws IOException, JSONException {
         final String url = API_URL + "/game/init/";
         Map<String, Object> data = defaultRequestData(credentials);
-        Map<String, Object> params = createParams(null, null, null, null, null, friends);
+        Map<String, Object> params = createParams(null, null, null, null, null, null, friends);
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
@@ -117,12 +120,28 @@ public class ElkaApi {
         Map<String, Object> data = defaultRequestData(credentials);
         Map<String, Object> params;
         if (friendId.equals("santa")) {
-            params = createParams(null, 2, 0, null, null, null);
+            params = createParams(null, 2, 0, null, null, null, null);
         } else {
-            params = createParams(friendId, 1, 0, sFrindUserId, userSign, null);
+            params = createParams(friendId, 1, 0, null, sFrindUserId, userSign, null);
         }
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);
         return sendRequest(url, sign);
+    }
+
+    public JSONObject startExpidition(String expiditionId) throws IOException, JSONException {
+        final String url = API_URL + "/expedition/start/";
+        Map<String, Object> data = defaultRequestData(credentials);
+        data.put("params", createParams(null, null, null, expiditionId, null, null, null));
+        JSONObject signParams = SignGenerator.getSignRequest(new JSONObject(data), url);
+        return sendRequest(url, signParams);
+    }
+
+    public JSONObject endExpidition(String startedExpiditionId) throws IOException, JSONException {
+        final String url = API_URL + "/expedition/end/";
+        Map<String, Object> data = defaultRequestData(credentials);
+        data.put("params", createParams(null, null, null, startedExpiditionId, null, null, null));
+        JSONObject signParams = SignGenerator.getSignRequest(new JSONObject(data), url);
+        return sendRequest(url, signParams);
     }
 }

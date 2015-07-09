@@ -1,6 +1,9 @@
 package com.elka;
 
+import com.elka.storage.ApplicationStorage;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -23,11 +26,13 @@ public class ExpiditionsResource {
     @Consumes("application/x-www-form-urlencoded")
     public String setExpiditions(@FormParam("ids") String ids) {
         String[] idsArray = StringUtils.split(ids, ",");
-        if (idsArray.length != 0) {
-            
-        }
+        List<String> idsList = Arrays.asList(idsArray);
+        boolean areSaved = ApplicationStorage.getInstance().getExpiditions().tryToSet(idsList);
         Map<String, Object> result = new HashMap<>();
-        result.put("saved", true);
+        result.put("saved", areSaved);
+        if (!areSaved) {
+            result.put("msg", "Count of deers greater than available count of deers.");
+        }
         return new JSONObject(result).toString();
     }
 }

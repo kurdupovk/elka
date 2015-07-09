@@ -126,13 +126,25 @@ var createLoginDiv = function(){
 }
 
 var initExpiditions = function(expiditions) {
+    var active_expeditions = expiditions.active;
     $("#active_expeditions li").remove();
-    for(i in expiditions){
-        var item = $("#available_expeditions").find("[exp_id=" + expiditions[i]["data_id"] + "]");
+    for(i in active_expeditions){
+        var item = $("#available_expeditions").find("[exp_id=" + active_expeditions[i] + "]");
         if(item.length == 0) {
             continue;
         }
         item.clone().appendTo($("#active_expeditions"));
+    }
+    var saved_expeditions = expiditions.saved;
+    //try to fetch if not set at all.
+    if($("#saved_expeditions li").length == 0) {
+        for(i in saved_expeditions) {
+            var item = $("#available_expeditions").find("[exp_id=" + saved_expeditions[i] + "]");
+            if(item.length == 0) {
+                continue;
+            }
+            item.clone().appendTo($("#saved_expeditions"));
+        }
     }
 }
 var failedRequests = 0;
@@ -148,10 +160,10 @@ var start = function(){
         }
         removeLoginDiv();
         createTable(d.chests);
-        initExpiditions(d.expiditions.active);
+        initExpiditions(d.expiditions);
     }).fail(function(a,b,c){
       failedRequests++;
-      if(failedRequests >= 10){
+      if(failedRequests >= 5){
         clearInterval(interval);
         var item = document.getElementById("users");
         if(item == null){
@@ -192,9 +204,11 @@ $(document).ready(function(){
                 ids.push($(item).attr("exp_id"));
             });
             $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
-                console.log(d);
+                if(!d.saved) {
+                    alert(d.msg);
+                }
             }).fail(function(a){
-                alert(a.responseText);
+                alert(a.responseText || a.statusText);
             });
         },
         out: function(event, ui) {
@@ -206,7 +220,7 @@ $(document).ready(function(){
             $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
                 console.log(d);
             }).fail(function(a){
-                alert(a.responseText);
+                alert(a.responseText || a.statusText);
             });
         }
     });
