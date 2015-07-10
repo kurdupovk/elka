@@ -78,7 +78,7 @@ public class Main {
         System.in.read();
         chestFetchedExecutor.shutdownNow();
         ChestUnlockerCollection.getInstance().shutDown();
-        ApplicationStorage.getInstance().getExpiditions().shutDown();
+        ApplicationStorage.getInstance().getExpeditions().shutDown();
         server.stop();
     }
 }

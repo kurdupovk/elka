@@ -129,7 +129,7 @@ public class ElkaApi {
         return sendRequest(url, sign);
     }
 
-    public JSONObject startExpidition(String expiditionId) throws IOException, JSONException {
+    public JSONObject startExpedition(String expiditionId) throws IOException, JSONException {
         final String url = API_URL + "/expedition/start/";
         Map<String, Object> data = defaultRequestData(credentials);
         Map<String, Object> params = createParams(null, null, null, expiditionId, null, null, null);
@@ -138,7 +138,7 @@ public class ElkaApi {
         return sendRequest(url, signParams);
     }
 
-    public JSONObject endExpidition(String startedExpiditionId) throws IOException, JSONException {
+    public JSONObject endExpedition(String startedExpiditionId) throws IOException, JSONException {
         final String url = API_URL + "/expedition/end/";
         Map<String, Object> data = defaultRequestData(credentials);
         Map<String, Object> params = createParams(null, null, null, startedExpiditionId, null, null, null);

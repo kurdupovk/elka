@@ -199,11 +199,8 @@ $(document).ready(function(){
                 return;
             }
             ui.draggable.clone().draggable().appendTo(this);
-            var ids = [];
-            $("#saved_expeditions li").each(function(i, item){ 
-                ids.push($(item).attr("exp_id"));
-            });
-            $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
+            var id = ui.draggable.attr("exp_id");
+            $.post('http://localhost:8080/elka/expiditions/add', "id=" + id, function(d){
                 if(!d.saved) {
                     alert(d.msg);
                 }
@@ -212,12 +209,12 @@ $(document).ready(function(){
             });
         },
         out: function(event, ui) {
+            if(ui.draggable.parents("#saved_expeditions").length == 0) {
+                return;
+            }
             ui.helper.remove();
-            var ids = [];
-            $("#saved_expeditions li").each(function(i, item){ 
-                ids.push($(item).attr("exp_id"));
-            });
-            $.post('http://localhost:8080/elka/expiditions', "ids=" + ids, function(d){
+            var id = ui.draggable.attr("exp_id");
+            $.post('http://localhost:8080/elka/expiditions/del', "id=" + id, function(d){
                 console.log(d);
             }).fail(function(a){
                 alert(a.responseText || a.statusText);

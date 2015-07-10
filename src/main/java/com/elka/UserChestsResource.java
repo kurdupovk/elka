@@ -25,8 +25,8 @@ public class UserChestsResource {
         credentialsMap.put("valid", credentials != null ? !credentials.isInvalid() : null);
         result.put("credentials", new JSONObject(credentialsMap));
         result.put("chests", new JSONArray(ApplicationStorage.getInstance().getUserChests().values()));
-        expedtions.put("active", new JSONArray(ApplicationStorage.getInstance().getExpiditions().getActive()));
-        expedtions.put("saved", new JSONArray(ApplicationStorage.getInstance().getExpiditions().getRepeatable()));
+        expedtions.put("active", new JSONArray(ApplicationStorage.getInstance().getExpeditions().getActive()));
+        expedtions.put("saved", new JSONArray(ApplicationStorage.getInstance().getExpeditions().getRepeatable()));
         result.put("expiditions", new JSONObject(expedtions));
         return new JSONObject(result).toString();
     }

@@ -39,12 +39,12 @@ public class FriendsAppFetcher {
             ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
             if (!applicationStorage.getConfig().isFetchFrieds()) {
                 JSONObject result = elkaApi.init(friendIds);
-                applicationStorage.getExpiditions().parseActiveExpiditions(result);
+                applicationStorage.getExpeditions().parseActiveExpeditions(result);
                 return;
             }
             friendIds.addAll(getAppFriends(vkApi));
             JSONObject result = elkaApi.init(friendIds);
-            applicationStorage.getExpiditions().parseActiveExpiditions(result);
+            applicationStorage.getExpeditions().parseActiveExpeditions(result);
             JSONArray friendsArray = result.getJSONObject("data").getJSONArray("friends");
             result = vkApi.getAreFriends(friendIds);
             JSONArray areFriends = result.getJSONArray("response");

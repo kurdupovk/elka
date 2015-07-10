@@ -28,7 +28,7 @@ public class ApplicationStorage {
     private Map<String, JSONObject> friends = new ConcurrentHashMap<>();
     private Map<String, JSONObject> friendsOfFriends = new ConcurrentHashMap<>();
     private Config config = new Config();
-    private Expiditions expiditions = new Expiditions();
+    private Expeditions expeditions = new Expeditions();
 
     private ApplicationStorage() {
     }
@@ -49,8 +49,8 @@ public class ApplicationStorage {
         return friendsOfFriends;
     }
 
-    public Expiditions getExpiditions() {
-        return expiditions;
+    public Expeditions getExpeditions() {
+        return expeditions;
     }
 
     public Config getConfig() {
