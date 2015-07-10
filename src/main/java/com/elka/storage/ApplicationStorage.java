@@ -27,11 +27,12 @@ public class ApplicationStorage {
     private Map<String, JSONObject> userChests = new ConcurrentHashMap<>();
     private Map<String, JSONObject> friends = new ConcurrentHashMap<>();
     private Map<String, JSONObject> friendsOfFriends = new ConcurrentHashMap<>();
+    private Config config = new Config();
     private Expiditions expiditions = new Expiditions();
 
     private ApplicationStorage() {
     }
-    
+
     public static ApplicationStorage getInstance() {
         return ApplicationStorageHolder.INSTANCE;
     }
@@ -50,5 +51,9 @@ public class ApplicationStorage {
 
     public Expiditions getExpiditions() {
         return expiditions;
+    }
+
+    public Config getConfig() {
+        return config;
     }
 }

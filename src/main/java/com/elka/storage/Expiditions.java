@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -23,7 +22,6 @@ public class Expiditions {
 
     public static final int TOTAL_DEERS = 6;
     private final List<Expidition> expiditions = new CopyOnWriteArrayList<>();
-    ReentrantLock lock = new ReentrantLock();
 
     private class Expidition implements Runnable {
 
@@ -112,9 +110,9 @@ public class Expiditions {
         }
 
         private void reset() {
+            worker = new Thread(this);
             assignedId = null;
             timeEnd = null;
-            worker = new Thread(this);
             setName(worker);
         }
 
@@ -196,23 +194,18 @@ public class Expiditions {
     }
 
     private void runExpiditions() {
-        lock.lock();
-        try {
-            List<String> active = getActive();
-            int busyDeers = 0;
-            for (String id : active) {
-                busyDeers += getCountDeersById(Integer.parseInt(id));
-            }
-            int freeDeers = TOTAL_DEERS - busyDeers;
-            if (freeDeers <= 0) {
-                return;
-            }
-            List<Expidition> acceptable = findAcceptableExpiditions(freeDeers);
-            for (Expidition expidition : acceptable) {
-                expidition.send();
-            }
-        } finally {
-            lock.unlock();
+        List<String> active = getActive();
+        int busyDeers = 0;
+        for (String id : active) {
+            busyDeers += getCountDeersById(Integer.parseInt(id));
+        }
+        int freeDeers = TOTAL_DEERS - busyDeers;
+        if (freeDeers <= 0) {
+            return;
+        }
+        List<Expidition> acceptable = findAcceptableExpiditions(freeDeers);
+        for (Expidition expidition : acceptable) {
+            expidition.send();
         }
     }
 

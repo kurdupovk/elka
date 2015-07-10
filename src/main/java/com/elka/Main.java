@@ -54,7 +54,22 @@ public class Main {
         return executor;
     }
 
+    private static void parseArgs(String[] args) {
+        if (args.length <= 0) {
+            return;
+        }
+        for (String arg : args) {
+            if (arg.contains("no-chests")) {
+                ApplicationStorage.getInstance().getConfig().setOpenChests(false);
+            }
+            if(arg.contains("no-friends")){
+                ApplicationStorage.getInstance().getConfig().setFetchFrieds(false);
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException, JSONException {
+        parseArgs(args);
         final HttpServer server = startServer();
         CredentialsStorage.getInstance().loadFromFile();
         new FriendsAppFetcher(CredentialsStorage.getInstance()).fetchTo(ApplicationStorage.getInstance());

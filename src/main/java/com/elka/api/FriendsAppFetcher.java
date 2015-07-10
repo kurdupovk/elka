@@ -34,15 +34,16 @@ public class FriendsAppFetcher {
         }
         LOG.info("Starting fetching users profiles.");
         try {
+            List<String> friendIds = new ArrayList<>();
             VKApi vkApi = new VKApi(credentialsStorage.get());
             ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
-            JSONObject result = vkApi.getAppFriends();
-            JSONArray ids = result.getJSONArray("response");
-            List<String> friendIds = new ArrayList<>();
-            for (int i = 0; i < ids.length(); i++) {
-                friendIds.add(ids.getString(i));
+            if (!applicationStorage.getConfig().isFetchFrieds()) {
+                JSONObject result = elkaApi.init(friendIds);
+                applicationStorage.getExpiditions().parseActiveExpiditions(result);
+                return;
             }
-            result = elkaApi.init(friendIds);
+            friendIds.addAll(getAppFriends(vkApi));
+            JSONObject result = elkaApi.init(friendIds);
             applicationStorage.getExpiditions().parseActiveExpiditions(result);
             JSONArray friendsArray = result.getJSONObject("data").getJSONArray("friends");
             result = vkApi.getAreFriends(friendIds);
@@ -104,5 +105,15 @@ public class FriendsAppFetcher {
         } finally {
             LOG.info("Users profiles fetching is finished.");
         }
+    }
+
+    private List<String> getAppFriends(VKApi vkApi) throws IOException, JSONException {
+        List<String> friends = new ArrayList<>();
+        JSONObject result = vkApi.getAppFriends();
+        JSONArray ids = result.getJSONArray("response");
+        for (int i = 0; i < ids.length(); i++) {
+            friends.add(ids.getString(i));
+        }
+        return friends;
     }
 }

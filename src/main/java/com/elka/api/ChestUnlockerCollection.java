@@ -41,6 +41,9 @@ public class ChestUnlockerCollection {
     }
 
     public void startWith(CredentialsStorage credentialsStorage, ApplicationStorage applicationStorage) {
+        if (!applicationStorage.getConfig().isOpenChests()) {
+            return;
+        }
         if (credentialsStorage.isEmpty()) {
             return;
         }
