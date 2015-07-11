@@ -4,14 +4,18 @@ import com.elka.api.ElkaApi;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
@@ -26,6 +30,7 @@ public class Expeditions {
 
     public static final int TOTAL_DEERS = 6;
     private final List<Expedition> expeditions = new CopyOnWriteArrayList<>();
+    private final AtomicInteger earnedMoney = new AtomicInteger(0);
     private final Semaphore semaphore = new Semaphore(TOTAL_DEERS);
     private final ExecutorService expeditionPool = Executors.newCachedThreadPool(new ThreadFactory() {
         @Override
@@ -90,7 +95,7 @@ public class Expeditions {
                 if (status == SHUTDOWN) {
                     logger.info(getName() + " shutting down.");
                 } else {
-                    logger.log(Level.SEVERE, "Thread was interrupted", ex);
+                    logger.log(Level.SEVERE, "Thread was unexpectedly interrupted", ex);
                 }
             } finally {
                 shutDown();
@@ -114,8 +119,9 @@ public class Expeditions {
             if (!ended.has("data")) {
                 throw new JSONException(ended.toString());
             }
+            JSONObject awards = ended.getJSONObject("data").getJSONObject("awards");
+            earnedMoney.addAndGet(awards.getInt("money"));
             logger.info("Expedition '" + assignedId + "' finished. Awards - " + ended.getJSONObject("data").getJSONObject("awards").toString());
-            status = NOT_STARTED;
         }
 
         public void shutDown() {
@@ -180,14 +186,17 @@ public class Expeditions {
         }
     }
 
-    public List<String> getActive() {
-        List<String> active = new ArrayList<>();
+    public List<Map<String, Object>> getActive() {
+        List<Map<String, Object>> actives = new ArrayList<>();
         for (Expedition expedition : expeditions) {
             if (expedition.isRunning()) {
-                active.add(expedition.id);
+                Map<String, Object> expMap = new HashMap<>();
+                expMap.put("id", expedition.id);
+                expMap.put("timeEnd", expedition.timeEnd);
+                actives.add(expMap);
             }
         }
-        return active;
+        return actives;
     }
 
     public List<String> getRepeatable() {
@@ -200,15 +209,30 @@ public class Expeditions {
         return releatable;
     }
 
+    public int getEarnedMoney() {
+        return earnedMoney.get();
+    }
+
     public boolean tryToRemove(String id) {
+        Expedition repeatable = null;
         for (Expedition expedition : expeditions) {
             if (expedition.isRunning()) {
                 continue;
             }
             if (expedition.id.equals(id)) {
-                expedition.shutDown();
+                repeatable = expedition;
                 break;
             }
+        }
+        if (repeatable == null) {
+            for (Expedition expedition : expeditions) {
+                if (expedition.isRunning() && expedition.id.equals(id)) {
+                    expedition.repeatable = false;
+                    break;
+                }
+            }
+        } else {
+            repeatable.shutDown();
         }
         return true;
     }
@@ -222,11 +246,6 @@ public class Expeditions {
         }
         if (getCountDeersById(Integer.parseInt(id)) + currentSavedCountDeers > TOTAL_DEERS) {
             return false;
-        }
-        for (Expedition expedition : expeditions) {
-            if (expedition.isRunning()) {
-                expedition.repeatable = false;
-            }
         }
         Expedition expedition = new Expedition(id, null, null, true);
         expeditions.add(expedition);

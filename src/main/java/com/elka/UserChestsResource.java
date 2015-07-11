@@ -27,6 +27,7 @@ public class UserChestsResource {
         result.put("chests", new JSONArray(ApplicationStorage.getInstance().getUserChests().values()));
         expedtions.put("active", new JSONArray(ApplicationStorage.getInstance().getExpeditions().getActive()));
         expedtions.put("saved", new JSONArray(ApplicationStorage.getInstance().getExpeditions().getRepeatable()));
+        expedtions.put("earnedMoney", ApplicationStorage.getInstance().getExpeditions().getEarnedMoney());
         result.put("expiditions", new JSONObject(expedtions));
         return new JSONObject(result).toString();
     }

@@ -1,6 +1,9 @@
 <html>
-<link rel="stylesheet" href="jquery-ui.structure.min.css">
-<link rel="stylesheet" href="jquery-ui.min.css">
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="jquery-ui.structure.min.css">
+	<link rel="stylesheet" href="jquery-ui.min.css">
+</head>
 
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
 <script src="jquery-ui.min.js"></script>
@@ -125,15 +128,23 @@ var createLoginDiv = function(){
     document.body.appendChild(div);
 }
 
+var formatDate = function(millis) {
+	window.tzoffset = window.tzoffset || new Date().getTimezoneOffset() * 60000;
+	return new Date(millis - window.tzoffset).toISOString().replace(/[TZ]/g," ").trim().substring(0,19);
+}
+
 var initExpiditions = function(expiditions) {
     var active_expeditions = expiditions.active;
     $("#active_expeditions li").remove();
     for(i in active_expeditions){
-        var item = $("#available_expeditions").find("[exp_id=" + active_expeditions[i] + "]");
+		var active = active_expeditions[i];
+        var item = $("#available_expeditions").find("[exp_id=" + active["id"] + "]:not(.ui-draggable-dragging)");
         if(item.length == 0) {
             continue;
         }
-        item.clone().appendTo($("#active_expeditions"));
+		var clone = item.clone();
+		clone.text(clone.text() + " - " + formatDate(active["timeEnd"] * 1000));
+        clone.appendTo($("#active_expeditions"));
     }
     var saved_expeditions = expiditions.saved;
     //try to fetch if not set at all.
@@ -143,9 +154,10 @@ var initExpiditions = function(expiditions) {
             if(item.length == 0) {
                 continue;
             }
-            item.clone().appendTo($("#saved_expeditions"));
+            item.clone().draggable().appendTo($("#saved_expeditions"));
         }
     }
+	$("#earned_money").text(expiditions.earnedMoney);
 }
 var failedRequests = 0;
 var start = function(){
@@ -276,6 +288,10 @@ Your browser does not support the audio element.
         <fieldset id="active_expeditions">
             <legend>Активные экспедиции</legend>
         </fieldset>
+		<div id="money">
+			<b><span>Полученные деньги:</span></b>
+			<span id="earned_money"></span>
+		</div>
     </fieldset>
 </div>
 </body>

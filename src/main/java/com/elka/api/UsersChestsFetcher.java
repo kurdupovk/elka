@@ -35,6 +35,9 @@ public class UsersChestsFetcher {
                 LOG.log(Level.WARNING, "Current credentials are invalid. No fetch users chetsts process.");
                 return;
             }
+            if (appFriends.size() == 0) {
+                return;
+            }
             LOG.info("Starting fetching users chests.");
             try {
                 for (JSONObject appFriend : appFriends) {
