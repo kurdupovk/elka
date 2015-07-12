@@ -4,7 +4,6 @@ import com.elka.api.ElkaApi;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +66,7 @@ public class Expeditions {
         public void run() {
             try {
                 semaphore.acquire(requiredDeers);
+                status = RUNNING;
                 do {
                     try {
                         if (CredentialsStorage.getInstance().isEmpty() || CredentialsStorage.getInstance().get().isInvalid()) {
@@ -75,7 +75,7 @@ public class Expeditions {
                             break;
                         }
                         ElkaApi elkaApi = new ElkaApi(CredentialsStorage.getInstance().get());
-                        if (!isRunning()) {
+                        if (assignedId == null) {
                             startExpedition(elkaApi);
                         }
                         int now = (int) (System.currentTimeMillis() / 1000);
@@ -87,7 +87,7 @@ public class Expeditions {
                     } catch (IOException ex) {
                         logger.log(Level.SEVERE, null, ex);
                     } catch (JSONException ex) {
-                        logger.log(Level.WARNING, "Error with json parsing. Expeditions count - " + expeditions.size(), ex);
+                        logger.log(Level.WARNING, "Error json parsing.", ex);
                     }
                 } while (repeatable);
                 semaphore.release(requiredDeers);
@@ -121,7 +121,8 @@ public class Expeditions {
             }
             JSONObject awards = ended.getJSONObject("data").getJSONObject("awards");
             earnedMoney.addAndGet(awards.getInt("money"));
-            logger.info("Expedition '" + assignedId + "' finished. Awards - " + ended.getJSONObject("data").getJSONObject("awards").toString());
+            logger.info(getName() + " finished. Awards - " + ended.getJSONObject("data").getJSONObject("awards").toString());
+            assignedId = null;
         }
 
         public void shutDown() {
@@ -226,7 +227,8 @@ public class Expeditions {
         }
         if (repeatable == null) {
             for (Expedition expedition : expeditions) {
-                if (expedition.isRunning() && expedition.id.equals(id)) {
+                if (expedition.isRunning() && expedition.repeatable
+                        && expedition.id.equals(id)) {
                     expedition.repeatable = false;
                     break;
                 }
