@@ -70,7 +70,6 @@ public class Expeditions {
                 do {
                     try {
                         if (CredentialsStorage.getInstance().isEmpty() || CredentialsStorage.getInstance().get().isInvalid()) {
-                            shutDown();
                             logger.warning("No expedition ran.");
                             break;
                         }
@@ -86,10 +85,17 @@ public class Expeditions {
                         endExpedition(elkaApi);
                     } catch (IOException ex) {
                         logger.log(Level.SEVERE, null, ex);
+                        Thread.sleep(60000);
                     } catch (JSONException ex) {
                         logger.log(Level.WARNING, "Error json parsing.", ex);
+                    } catch (InterruptedException ex) {
+                        if (status == SHUTDOWN) {
+                            logger.info(getName() + " shutting down.");
+                        } else {
+                            logger.log(Level.SEVERE, "Thread was unexpectedly interrupted", ex);
+                        }
                     }
-                } while (repeatable);
+                } while (repeatable && status != SHUTDOWN);
                 semaphore.release(requiredDeers);
             } catch (InterruptedException ex) {
                 if (status == SHUTDOWN) {
@@ -97,14 +103,19 @@ public class Expeditions {
                 } else {
                     logger.log(Level.SEVERE, "Thread was unexpectedly interrupted", ex);
                 }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, "UNHANDLED EXCEPTION!!!", ex);
             } finally {
-                shutDown();
+                expeditions.remove(this);
             }
         }
 
         private void startExpedition(ElkaApi elkaApi) throws IOException, JSONException {
             JSONObject started = elkaApi.startExpedition(id);
             if (!started.has("data")) {
+                if (started.getJSONObject("error").getString("text").contains("Not enough tickets")) {
+                    repeatable = false;
+                }
                 throw new JSONException(started.toString());
             }
             JSONObject data = started.getJSONObject("data");
@@ -117,6 +128,10 @@ public class Expeditions {
         private void endExpedition(ElkaApi elkaApi) throws IOException, JSONException {
             JSONObject ended = elkaApi.endExpedition(assignedId);
             if (!ended.has("data")) {
+                if (ended.getJSONObject("error").getString("text").contains("User expedition not found")) {
+                    assignedId = null;
+                    return;
+                }
                 throw new JSONException(ended.toString());
             }
             JSONObject awards = ended.getJSONObject("data").getJSONObject("awards");
@@ -125,8 +140,7 @@ public class Expeditions {
             assignedId = null;
         }
 
-        public void shutDown() {
-            expeditions.remove(this);
+        public void stop() {
             status = SHUTDOWN;
             if (this.future != null) {
                 future.cancel(true);
@@ -167,10 +181,10 @@ public class Expeditions {
     }
 
     public void shutDown() {
+        expeditionPool.shutdown();
         for (Expedition expedition : expeditions) {
-            expedition.shutDown();
+            expedition.stop();
         }
-        expeditionPool.shutdownNow();
     }
 
     public void parseActiveExpeditions(JSONObject init) {
@@ -234,7 +248,7 @@ public class Expeditions {
                 }
             }
         } else {
-            repeatable.shutDown();
+            repeatable.stop();
         }
         return true;
     }
