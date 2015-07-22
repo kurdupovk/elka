@@ -54,7 +54,6 @@ var createTable = function(data){
         } else {
             time = new Date(data[i].time * 1000 + NEXT_CHEST_TIME);
             if((time - now < 30000) && (time - now > 0)){
-                signal();
                 td3.style.backgroundColor = "greenyellow";
             }
             if(data[i].openedBy) {
