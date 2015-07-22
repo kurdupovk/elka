@@ -3,6 +3,32 @@
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="jquery-ui.structure.min.css">
 	<link rel="stylesheet" href="jquery-ui.min.css">
+    <style type="text/css">
+    #available_expeditions {
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    #saved_expeditions {
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    #available_expeditions li:hover {
+        cursor: pointer;
+        background-color: gainsboro;
+    }
+    #saved_expeditions li:hover {
+        cursor: pointer;
+        background-color: gainsboro;
+    }
+    </style>
 </head>
 
 <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -137,7 +163,7 @@ var initExpiditions = function(expiditions) {
     $("#active_expeditions li").remove();
     for(i in active_expeditions){
 		var active = active_expeditions[i];
-        var item = $("#available_expeditions").find("[exp_id=" + active["id"] + "]:not(.ui-draggable-dragging)");
+        var item = $("#available_expeditions").find("[exp_id=" + active["id"] + "]");
         if(item.length == 0) {
             continue;
         }
@@ -153,7 +179,7 @@ var initExpiditions = function(expiditions) {
             if(item.length == 0) {
                 continue;
             }
-            item.clone().draggable().appendTo($("#saved_expeditions"));
+            item.clone().appendTo($("#saved_expeditions"));
         }
     }
 	$("#earned_money").text(expiditions.earnedMoney);
@@ -199,38 +225,41 @@ start();
 
 $(document).ready(function(){
     $('#available_expeditions').accordion();
-    $('#available_expeditions li').draggable({cursor:'move', helper: 'clone', activeClass: "ui-state-default", hoverClass: "ui-state-hover"});
-    $('#saved_expeditions').droppable({
-        drop: function( event, ui ) {
-            var count = 0;
-            $("#saved_expeditions li").each(function(i, item){ 
-                count += parseInt($(item).attr("deer"));
-            });
-            if(count + parseInt(ui.draggable.attr("deer")) > 6) {
-                return;
-            }
-            ui.draggable.clone().draggable().appendTo(this);
-            var id = ui.draggable.attr("exp_id");
-            $.post('http://localhost:8080/elka/expiditions/add', "id=" + id, function(d){
-                if(!d.saved) {
-                    alert(d.msg);
-                }
-            }).fail(function(a){
-                alert(a.responseText || a.statusText);
-            });
-        },
-        out: function(event, ui) {
-            if(ui.draggable.parents("#saved_expeditions").length == 0) {
-                return;
-            }
-            ui.helper.remove();
-            var id = ui.draggable.attr("exp_id");
-            $.post('http://localhost:8080/elka/expiditions/del', "id=" + id, function(d){
-                console.log(d);
-            }).fail(function(a){
-                alert(a.responseText || a.statusText);
-            });
+    $("#available_expeditions").click(function(e){
+        var elem = $(document.elementFromPoint(e.clientX, e.clientY));
+        if(!elem.is("li")) {
+            return;
         }
+        var count = 0;
+        $("#saved_expeditions li").each(function(i, item){ 
+            count += parseInt($(item).attr("deer"));
+        });
+        if(count + parseInt(elem.attr("deer")) > 6) {
+            return;
+        }
+        var id = elem.attr("exp_id");
+        $.post('http://localhost:8080/elka/expiditions/add', "id=" + id, function(d){
+            if(!d.saved) {
+                alert(d.msg);
+                return;
+            }
+            elem.clone().appendTo($("#saved_expeditions"));
+        }).fail(function(a){
+            alert(a.responseText || a.statusText);
+        });
+    });
+    $("#saved_expeditions").click(function(e){
+        var elem = $(document.elementFromPoint(e.clientX, e.clientY));
+        if(!elem.is("li")) {
+            return;
+        }
+        var id = elem.attr("exp_id");
+        $.post('http://localhost:8080/elka/expiditions/del', "id=" + id, function(d){
+            console.log(d);
+            elem.remove();
+        }).fail(function(a){
+            alert(a.responseText || a.statusText);
+        });
     });
 });
 </script>
