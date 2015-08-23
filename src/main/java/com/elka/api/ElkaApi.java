@@ -115,14 +115,14 @@ public class ElkaApi {
      * "aid":"4606044","uid":"6591130","version":11,"sign":"5148d7f9f613362a5d30573a823a58aa",
      * "authKey":"e87047d9d5aac0a66cfb477c36120568","suid":"12143235"}
      */
-    public JSONObject openChest(String friendId, String sFrindUserId, String userSign) throws IOException, JSONException {
+    public JSONObject openChest(String friendId, String sFrindUserId, String userSign, int screenId) throws IOException, JSONException {
         final String url = API_URL + "/friend/openChest/";
         Map<String, Object> data = defaultRequestData(credentials);
         Map<String, Object> params;
         if (friendId.equals("santa")) {
-            params = createParams(null, 2, 0, null, null, null, null);
+            params = createParams(null, 2, screenId, null, null, null, null);
         } else {
-            params = createParams(friendId, 1, 0, null, sFrindUserId, userSign, null);
+            params = createParams(friendId, 1, screenId, null, sFrindUserId, userSign, null);
         }
         data.put("params", new JSONObject(params));
         JSONObject sign = SignGenerator.getSignRequest(new JSONObject(data), url);

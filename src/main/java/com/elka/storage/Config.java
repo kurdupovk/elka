@@ -8,6 +8,7 @@ public class Config {
 
     boolean openChests = true;
     boolean fetchFrieds = true;
+    int screenId = 0;
 
     public Config() {
     }
@@ -26,5 +27,13 @@ public class Config {
 
     public void setFetchFrieds(boolean fetchFrieds) {
         this.fetchFrieds = fetchFrieds;
+    }
+
+    public int getScreenId() {
+        return screenId;
+    }
+
+    public void setScreenId(int screenId) {
+        this.screenId = screenId;
     }
 }

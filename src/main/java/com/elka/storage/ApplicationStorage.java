@@ -22,6 +22,7 @@ public class ApplicationStorage {
             put("photo", "");
             put("name", "Дед мороз");
             put("sign", "");
+            put("screenId", 0);
         }
     });
     private Map<String, JSONObject> userChests = new ConcurrentHashMap<>();

@@ -46,7 +46,7 @@ var signal = function(){
     }
 }
 
-var createTable = function(data){
+var createTable = function(data, screenId){
     var oldTable = document.getElementById("users");
     var newTable = document.createElement('table');
     newTable.id = "users";
@@ -108,10 +108,11 @@ var createTable = function(data){
         tr.appendChild(td4);
         newTable.appendChild(tr);
     }
+	$("select").val(screenId);
     if(oldTable != null){
-        document.body.replaceChild(newTable, oldTable);
+        $(oldTable).replaceWith($(newTable));
     } else{
-        document.body.appendChild(newTable);
+        $(newTable).appendTo($("#user_chests"));
     }
 }
 var login = function(){
@@ -196,13 +197,13 @@ var start = function(){
             return;
         }
         removeLoginDiv();
-        createTable(d.chests);
+        createTable(d.chests, d.screenId);
         initExpiditions(d.expiditions);
     }).fail(function(a,b,c){
       failedRequests++;
       if(failedRequests >= 5){
         clearInterval(interval);
-        var item = document.getElementById("users");
+        var item = document.getElementById("user_chests");
         if(item == null){
             item = document.getElementById('login');
         }
@@ -261,6 +262,16 @@ $(document).ready(function(){
             alert(a.responseText || a.statusText);
         });
     });
+
+	$("select").change(function(e){
+		$.post('http://localhost:8080/elka/userchests/screen', "id=" + $("select").val(), function(d){
+            if(!d.setForAll) {
+				alert("Screen is set not for all.");
+			}
+        }).fail(function(a){
+            alert(a.responseText || a.statusText);
+        });
+	});
 });
 </script>
 <body>
@@ -308,6 +319,17 @@ Your browser does not support the audio element.
                         <li exp_id="18" deer="6">Грушевый Сад(120-360, 20ч., 6 оленей)</li>
                     </ul>
                 </div>
+                <h4><a href="#">Осень</a></h4>
+                <div>
+                    <ul>
+                        <li exp_id="19" deer="1">Озеро Резия(4-7, 1ч., 1 олень)</li>
+                        <li exp_id="20" deer="2">Озеро Мэтисон(7-20, 2ч., 2 оленя)</li>
+                        <li exp_id="21" deer="3">Озеро Кадо(20-52, 4ч., 3 оленя)</li>
+                        <li exp_id="22" deer="4">Салар-де-Сурире(40-130, 8ч., 4 оленя)</li>
+                        <li exp_id="23" deer="5">Пещера Мелиссани(65-325, 16ч., 5 оленей)</li>
+                        <li exp_id="24" deer="6">Парк Крейтер(130-390, 20ч., 6 оленей)</li>
+                    </ul>
+                </div>
             </div>
         </fieldset>
         <fieldset id="saved_expeditions">
@@ -321,6 +343,14 @@ Your browser does not support the audio element.
 			<span id="earned_money"></span>
 		</div>
     </fieldset>
+</div>
+<div id="user_chests">
+	<select>
+		<option value="0">Зима</option>
+		<option value="1">Весна</option>
+		<option value="2">Лето</option>
+		<option value="3">Осень</option>
+	<select/>
 </div>
 </body>
 </html>

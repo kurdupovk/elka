@@ -53,6 +53,7 @@ public class FriendsAppFetcher {
             boolean found = false;
             for (String friendId : friendIds) {
                 JSONObject user = new JSONObject();
+                user.put("screenId", 0);
                 for (int i = 0; i < friendsArray.length(); i++) {
                     JSONObject friend = friendsArray.getJSONObject(i);
                     if (friend.getString("sUserId").equals(friendId)) {

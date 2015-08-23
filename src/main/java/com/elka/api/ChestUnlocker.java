@@ -50,7 +50,7 @@ public class ChestUnlocker extends Thread {
             log("is going to open chest");
             ElkaApi elkaApi = new ElkaApi(credentialsStorage.get());
             for (int i = 0; i < 10; i++) {
-                JSONObject openChest = elkaApi.openChest(userId, sUserId, user.optString("sign"));
+                JSONObject openChest = elkaApi.openChest(userId, sUserId, user.optString("sign"), user.optInt("screenId"));
                 JSONObject data = openChest.getJSONObject("data");
                 boolean isOpenedByMe = data.optJSONObject("awards") != null && data.optInt("success") == 1;
                 boolean isOpenedByOther = data.optJSONObject("chest") != null && data.getJSONObject("chest").getInt("time") > chestTime;
