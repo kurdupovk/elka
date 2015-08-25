@@ -53,7 +53,7 @@ public class FriendsAppFetcher {
             boolean found = false;
             for (String friendId : friendIds) {
                 JSONObject user = new JSONObject();
-                user.put("screenId", 0);
+                user.put("screenId", applicationStorage.getConfig().getScreenId());
                 for (int i = 0; i < friendsArray.length(); i++) {
                     JSONObject friend = friendsArray.getJSONObject(i);
                     if (friend.getString("sUserId").equals(friendId)) {
@@ -96,6 +96,7 @@ public class FriendsAppFetcher {
                 }
                 applicationStorage.getFriends().put(user.getString("userId"), user);
             }
+            ApplicationStorage.SANTA.put("screenId", applicationStorage.getConfig().getScreenId());
             applicationStorage.getFriends().put(ApplicationStorage.SANTA.getString("userId"), ApplicationStorage.SANTA);
             LOG.info("Fetched friends:");
             LOG.info(new JSONArray(applicationStorage.getFriends().values()).toString(2));
